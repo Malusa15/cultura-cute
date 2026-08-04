@@ -20,18 +20,18 @@ export const MARCA = {
 
   sobreNosotras:
     'Cultura.Cute nace para quienes entienden la ropa como una forma de expresión. ' +
-    'Cada prenda está diseñada para destacar, mezclando referencias Y2K, moda alternativa ' +
-    'y una confección artesanal donde ninguna pieza busca pasar desapercibida.',
+    'Cada prenda está diseñada para destacar, mezclando referencias de distintos géneros, ' +
+    'épocas y conceptos de moda. Confecciones que no buscan pasar desapercibidas.',
 
   vision:
-    'Construir un universo creativo donde la moda, el arte y la identidad se encuentren. ' +
-    'Que Cultura.Cute trascienda las prendas y se convierta en una comunidad que inspire ' +
+    'Construimos este universo creativo donde la moda, el arte y la identidad se encuentran. ' +
+    'Cultura.Cute busca trascender las prendas y convertirse en una comunidad que inspire ' +
     'a expresarse sin seguir moldes ni tendencias pasajeras.',
 
   mision:
-    'Transformar la ropa en una forma de expresión. Diseñar prendas que invitan a sentirse ' +
-    'diferente, segura y libre de mostrar quién sos, apostando por la creatividad, ' +
-    'el trabajo artesanal y lo limitado.',
+    'Transformar la ropa en una forma de expresión es un sueño que hacemos realidad con ' +
+    'Cultura.Cute. Diseñando prendas que invitan a sentirse diferente, segura y libre de ' +
+    'mostrar quién sos, apostando por el trabajo artesanal y lo limitado.',
 
   valores: ['Originalidad', 'Calidad', 'Comunidad', 'Autenticidad'],
 
