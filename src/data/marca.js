@@ -10,7 +10,7 @@ export const MARCA = {
   whatsapp: '5492235402402',
   whatsappVisible: '223 540-2402',
 
-  email: 'zoecelinapenaloza@gmail.com',
+  email: 'malusacampos15@gmail.com',
   instagram: 'cultura.cute',
   instagramUrl: 'https://www.instagram.com/cultura.cute/',
   ciudad: 'Mar del Plata, Argentina',
