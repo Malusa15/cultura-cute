@@ -72,7 +72,7 @@ export const SERVICIOS = [
     titulo: 'Personalización',
     texto:
       'Intervenimos prendas que ya tenés: apliques, cortes, teñidos y detalles, ' +
-      'dándole nuestra impronta Cutie conservando tu estilo.',
+      'dándoles nuestra impronta Cutie conservando tu estilo.',
     consulta: 'Hola! Quiero personalizar una prenda que ya tengo',
   },
 ]
