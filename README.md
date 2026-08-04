@@ -1,5 +1,7 @@
 # Cultura.Cute
 
+**Online en → https://malusa15.github.io/cultura-cute/**
+
 Sitio público de la marca: portfolio + vidriera de venta. Las compras no se cierran
 en la página: se arma un carrito y "Finalizar compra" abre WhatsApp con el pedido escrito.
 
@@ -7,10 +9,25 @@ en la página: se arma un carrito y "Finalizar compra" abre WhatsApp con el pedi
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+npm run dev      # http://localhost:5173/cultura-cute/
 npm run build    # genera dist/
 npm run preview  # sirve dist/ para probar el build
 ```
+
+Ojo con la ruta de `dev`: el sitio cuelga de `/cultura-cute/` y no de la raíz
+(ver *Publicación*). Entrar a `localhost:5173` a secas redirige solo.
+
+## Publicación
+
+Cada push a `main` dispara `.github/workflows/deploy.yml`, que buildea y publica en
+GitHub Pages. No hay que hacer nada a mano.
+
+Como Pages sirve el sitio desde un subdirectorio, `vite.config.js` define
+`base: '/cultura-cute/'`. Vite aplica ese prefijo en el HTML y el CSS, pero **no**
+dentro de strings de JavaScript, así que las rutas a `public/` que viven en el código
+(fotos de productos, logos) pasan por el helper `asset()` de `src/lib/rutas.js`.
+Si alguna vez se mueve a un dominio propio, alcanza con cambiar `base` y actualizar
+las meta de Open Graph en `index.html`.
 
 Requiere Node 18+ (instalado: v24).
 
