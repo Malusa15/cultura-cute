@@ -101,9 +101,18 @@ Las opciones viven en `src/data/taxonomia.js` y están organizadas en ejes separ
 | Precio · Disponibilidad | — |
 
 La taxonomía se declara a mano en vez de derivarse de los productos: si saliera de
-ellos, una categoría sin prendas cargadas desaparecería del filtro. Las opciones que
-todavía no tienen ninguna prenda se muestran **deshabilitadas** y se activan solas
-al cargar la primera.
+ellos, una categoría sin prendas cargadas desaparecería del filtro.
+
+**Todas las opciones son clickeables**, incluso las vacías. Cuando la tienda queda
+sin resultados distingue dos casos:
+
+- La categoría todavía no tiene prendas cargadas → cartel **"Próximamente"** con un
+  botón para consultar por WhatsApp.
+- Cada opción elegida sí tiene prendas, pero la combinación no da resultados
+  (por ejemplo *Partes de arriba* + *Dorado*) → *"No hay prendas que coincidan con
+  esos filtros"* con el botón de limpiar.
+
+Esa distinción la hace `seleccionSinPrendas()` en `Tienda.jsx`.
 
 Dos criterios de armado, para no repetir el mismo filtro dos veces:
 

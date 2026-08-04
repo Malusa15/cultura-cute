@@ -37,24 +37,19 @@ export function hayFiltrosActivos(filtros) {
   )
 }
 
-// Un chip por opción. Las opciones que hoy no tienen ninguna prenda se muestran
-// deshabilitadas: así se ve que la categoría existe sin ofrecer un filtro que
-// devolvería la tienda vacía.
+// Un chip por opción. Todas quedan clickeables, incluso las que todavía no tienen
+// prendas cargadas: al elegirlas, la tienda muestra el cartel de "Próximamente"
+// en vez de un resultado vacío.
 function Chip({ valor, campo, activo, alAlternar, titulo }) {
-  const disponible = hayProductosCon(campo, valor)
+  const conPrendas = hayProductosCon(campo, valor)
 
-  // Si la opción tiene aclaración (por ejemplo "Cuties"), se mantiene aunque esté
-  // deshabilitada: si no, el nombre solo no dice nada.
-  const ayuda = [titulo, disponible ? null : 'Todavía no hay prendas en esta opción']
-    .filter(Boolean)
-    .join(' — ')
+  const ayuda = [titulo, conPrendas ? null : 'Próximamente'].filter(Boolean).join(' — ')
 
   return (
     <button
       type="button"
       className="chip"
       aria-pressed={activo}
-      disabled={!disponible}
       title={ayuda}
       onClick={() => alAlternar(valor)}
     >
