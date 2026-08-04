@@ -1,21 +1,23 @@
 import { useState } from 'react'
+import { COLORES, PRECIO_MAXIMO, PRECIO_MINIMO, TALLES, hayProductosCon } from '../data/productos.js'
 import {
   CATEGORIAS,
-  COLORES,
+  DESCRIPCIONES_CATEGORIA,
   ESTILOS,
-  PRECIO_MAXIMO,
-  PRECIO_MINIMO,
-  TALLES,
+  GENEROS,
+  MATERIALES,
   subcategoriasDe,
-} from '../data/productos.js'
+} from '../data/taxonomia.js'
 import { precio } from '../lib/formato.js'
 import { IconoChevron, IconoFiltros } from './Iconos.jsx'
 
 export const FILTROS_INICIALES = {
+  generos: [],
   categorias: [],
   subcategorias: [],
   talles: [],
   colores: [],
+  materiales: [],
   estilos: [],
   precioMax: PRECIO_MAXIMO,
   soloDisponibles: false,
@@ -23,17 +25,45 @@ export const FILTROS_INICIALES = {
 
 export function hayFiltrosActivos(filtros) {
   return (
+    filtros.generos.length > 0 ||
     filtros.categorias.length > 0 ||
     filtros.subcategorias.length > 0 ||
     filtros.talles.length > 0 ||
     filtros.colores.length > 0 ||
+    filtros.materiales.length > 0 ||
     filtros.estilos.length > 0 ||
     filtros.precioMax < PRECIO_MAXIMO ||
     filtros.soloDisponibles
   )
 }
 
-function GrupoChips({ titulo, opciones, seleccionadas, alAlternar }) {
+// Un chip por opción. Las opciones que hoy no tienen ninguna prenda se muestran
+// deshabilitadas: así se ve que la categoría existe sin ofrecer un filtro que
+// devolvería la tienda vacía.
+function Chip({ valor, campo, activo, alAlternar, titulo }) {
+  const disponible = hayProductosCon(campo, valor)
+
+  // Si la opción tiene aclaración (por ejemplo "Cuties"), se mantiene aunque esté
+  // deshabilitada: si no, el nombre solo no dice nada.
+  const ayuda = [titulo, disponible ? null : 'Todavía no hay prendas en esta opción']
+    .filter(Boolean)
+    .join(' — ')
+
+  return (
+    <button
+      type="button"
+      className="chip"
+      aria-pressed={activo}
+      disabled={!disponible}
+      title={ayuda}
+      onClick={() => alAlternar(valor)}
+    >
+      {valor}
+    </button>
+  )
+}
+
+function GrupoChips({ titulo, campo, opciones, seleccionadas, alAlternar }) {
   if (opciones.length === 0) return null
 
   return (
@@ -41,15 +71,13 @@ function GrupoChips({ titulo, opciones, seleccionadas, alAlternar }) {
       <span className="filtro__titulo">{titulo}</span>
       <div className="filtro__opciones">
         {opciones.map((opcion) => (
-          <button
+          <Chip
             key={opcion}
-            type="button"
-            className="chip"
-            aria-pressed={seleccionadas.includes(opcion)}
-            onClick={() => alAlternar(opcion)}
-          >
-            {opcion}
-          </button>
+            valor={opcion}
+            campo={campo}
+            activo={seleccionadas.includes(opcion)}
+            alAlternar={alAlternar}
+          />
         ))}
       </div>
     </div>
@@ -59,16 +87,14 @@ function GrupoChips({ titulo, opciones, seleccionadas, alAlternar }) {
 export default function Filtros({ filtros, setFiltros, resultados }) {
   const [panelAbierto, setPanelAbierto] = useState(false)
 
-  // Las subcategorías dependen de las categorías elegidas.
+  // La subcategoría recién tiene sentido con una categoría elegida: sin filtrar
+  // serían más de veinte chips sueltos.
   const subcategorias = subcategoriasDe(filtros.categorias)
 
   const alternar = (campo) => (valor) => {
     setFiltros((actuales) => {
       const lista = actuales[campo]
-      const nueva = lista.includes(valor)
-        ? lista.filter((v) => v !== valor)
-        : [...lista, valor]
-
+      const nueva = lista.includes(valor) ? lista.filter((v) => v !== valor) : [...lista, valor]
       const siguiente = { ...actuales, [campo]: nueva }
 
       // Al cambiar de categoría, descartamos las subcategorías que ya no aplican.
@@ -93,15 +119,14 @@ export default function Filtros({ filtros, setFiltros, resultados }) {
           Todo
         </button>
         {CATEGORIAS.map((categoria) => (
-          <button
+          <Chip
             key={categoria}
-            type="button"
-            className="chip"
-            aria-pressed={filtros.categorias.includes(categoria)}
-            onClick={() => alternar('categorias')(categoria)}
-          >
-            {categoria}
-          </button>
+            valor={categoria}
+            campo="categoria"
+            activo={filtros.categorias.includes(categoria)}
+            alAlternar={alternar('categorias')}
+            titulo={DESCRIPCIONES_CATEGORIA[categoria]}
+          />
         ))}
       </div>
 
@@ -136,25 +161,43 @@ export default function Filtros({ filtros, setFiltros, resultados }) {
       {panelAbierto && (
         <div className="filtros__panel" id="panel-filtros">
           <GrupoChips
+            titulo="Género"
+            campo="genero"
+            opciones={GENEROS}
+            seleccionadas={filtros.generos}
+            alAlternar={alternar('generos')}
+          />
+          <GrupoChips
             titulo="Subcategoría"
+            campo="subcategoria"
             opciones={subcategorias}
             seleccionadas={filtros.subcategorias}
             alAlternar={alternar('subcategorias')}
           />
           <GrupoChips
             titulo="Talle"
+            campo="talle"
             opciones={TALLES}
             seleccionadas={filtros.talles}
             alAlternar={alternar('talles')}
           />
           <GrupoChips
             titulo="Color"
+            campo="color"
             opciones={COLORES}
             seleccionadas={filtros.colores}
             alAlternar={alternar('colores')}
           />
           <GrupoChips
+            titulo="Material"
+            campo="material"
+            opciones={MATERIALES}
+            seleccionadas={filtros.materiales}
+            alAlternar={alternar('materiales')}
+          />
+          <GrupoChips
             titulo="Estilo"
+            campo="estilo"
             opciones={ESTILOS}
             seleccionadas={filtros.estilos}
             alAlternar={alternar('estilos')}

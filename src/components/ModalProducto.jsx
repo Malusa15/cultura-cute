@@ -132,10 +132,10 @@ export default function ModalProducto({ producto, alCerrar }) {
               </div>
             )}
 
-            {producto.materiales && (
+            {producto.composicion && (
               <div className="ficha__bloque">
                 <span className="filtro__titulo">Materiales</span>
-                <p>{producto.materiales}</p>
+                <p>{producto.composicion}</p>
               </div>
             )}
 

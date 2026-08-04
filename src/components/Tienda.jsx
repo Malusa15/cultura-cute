@@ -5,11 +5,15 @@ import TarjetaProducto from './TarjetaProducto.jsx'
 import ModalProducto from './ModalProducto.jsx'
 
 function pasaFiltros(producto, filtros) {
+  if (filtros.generos.length && !filtros.generos.includes(producto.genero)) return false
   if (filtros.categorias.length && !filtros.categorias.includes(producto.categoria)) return false
   if (filtros.subcategorias.length && !filtros.subcategorias.includes(producto.subcategoria)) {
     return false
   }
   if (filtros.colores.length && !filtros.colores.includes(producto.color)) return false
+  if (filtros.materiales.length && !producto.materiales.some((m) => filtros.materiales.includes(m))) {
+    return false
+  }
   if (filtros.estilos.length && !producto.estilo.some((e) => filtros.estilos.includes(e))) {
     return false
   }

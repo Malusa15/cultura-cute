@@ -1,4 +1,5 @@
 import { asset } from '../lib/rutas.js'
+import { ORDEN_TALLES } from './taxonomia.js'
 
 // Catalogo de ejemplo. Las fotos salen del portfolio 2026; los nombres, precios y
 // medidas son inventados y hay que reemplazarlos por los reales.
@@ -6,6 +7,12 @@ import { asset } from '../lib/rutas.js'
 // El stock va POR TALLE, no por producto: si S esta en 0 no se puede agregar al
 // carrito aunque M tenga unidades. `activo: false` oculta la prenda de la tienda
 // sin borrarla (es el campo que despues maneja el panel admin).
+//
+// `categoria`, `subcategoria`, `genero`, `materiales` y `estilo` tienen que usar
+// valores de taxonomia.js: de ahi salen las opciones de los filtros.
+//
+// Ojo con los dos campos de material: `materiales` es la lista de tags que filtra
+// la tienda, y `composicion` es el texto libre que se muestra en la ficha.
 
 const CATALOGO_CRUDO = [
   {
@@ -13,7 +20,8 @@ const CATALOGO_CRUDO = [
     nombre: 'Top satinado rosa',
     precio: 42000,
     moneda: 'ARS',
-    categoria: 'Tops',
+    genero: 'Mujer',
+    categoria: 'Partes de arriba',
     subcategoria: 'Corsets',
     descripcion:
       'Bustier de satén con escote corazón y costuras que marcan el busto. Cierra con cierre ' +
@@ -24,7 +32,8 @@ const CATALOGO_CRUDO = [
       { talle: 'L', stock: 1 },
     ],
     medidas: { largo: '48 cm', busto: '82-92 cm', cintura: '64-74 cm' },
-    materiales: 'Satén de poliéster, forrería de algodón',
+    materiales: ['Satén'],
+    composicion: 'Satén de poliéster, forrería de algodón',
     color: 'Rosa',
     estilo: ['Y2K', 'Fiesta'],
     imagenes: ['/img/productos/top-rosa.png'],
@@ -35,16 +44,16 @@ const CATALOGO_CRUDO = [
     nombre: 'Top estampado oriental',
     precio: 46000,
     moneda: 'ARS',
-    categoria: 'Tops',
+    genero: 'Mujer',
+    categoria: 'Partes de arriba',
     subcategoria: 'Blusas',
     descripcion:
       'Blusa sin mangas en satén estampado con dragones y fénix bordados, cuello mao y botones ' +
       'de alamar. Pieza única confeccionada con un corte de tela vintage: no se repite.',
-    talles: [
-      { talle: 'Único', stock: 1 },
-    ],
+    talles: [{ talle: 'Único', stock: 1 }],
     medidas: { largo: '52 cm', busto: '86-96 cm' },
-    materiales: 'Rayón estampado, apliques bordados a mano',
+    materiales: ['Satén'],
+    composicion: 'Rayón estampado, apliques bordados a mano',
     color: 'Crema',
     estilo: ['Y2K', 'Vintage'],
     imagenes: ['/img/productos/top-oriental.png'],
@@ -55,8 +64,9 @@ const CATALOGO_CRUDO = [
     nombre: 'Top gris texturado',
     precio: 39000,
     moneda: 'ARS',
-    categoria: 'Tops',
-    subcategoria: 'Musculosas',
+    genero: 'Mujer',
+    categoria: 'Partes de arriba',
+    subcategoria: 'Tops',
     descripcion:
       'Top corto tipo halter, con tiras al cuello y hebilla de corazón con strass al centro. ' +
       'Punto texturado con caída, elastizado en la espalda.',
@@ -66,7 +76,8 @@ const CATALOGO_CRUDO = [
       { talle: 'L', stock: 0 },
     ],
     medidas: { largo: '32 cm', busto: '78-88 cm' },
-    materiales: 'Punto texturado elastizado, herrería metálica',
+    materiales: ['Punto'],
+    composicion: 'Punto texturado elastizado, herrería metálica',
     color: 'Gris',
     estilo: ['Y2K', 'Streetwear'],
     imagenes: ['/img/productos/top-gris.png'],
@@ -77,7 +88,8 @@ const CATALOGO_CRUDO = [
     nombre: 'Musculosa rayas naranja',
     precio: 35000,
     moneda: 'ARS',
-    categoria: 'Tops',
+    genero: 'Mujer',
+    categoria: 'Partes de arriba',
     subcategoria: 'Musculosas',
     descripcion:
       'Musculosa de rayas horizontales con lettering estampado al frente. Corte ajustado ' +
@@ -88,7 +100,8 @@ const CATALOGO_CRUDO = [
       { talle: 'L', stock: 2 },
     ],
     medidas: { largo: '38 cm', busto: '76-90 cm' },
-    materiales: 'Algodón elastizado',
+    materiales: ['Algodón'],
+    composicion: 'Algodón elastizado',
     color: 'Naranja',
     estilo: ['Y2K', 'Streetwear'],
     imagenes: ['/img/productos/musculosa-rayas.png'],
@@ -99,8 +112,9 @@ const CATALOGO_CRUDO = [
     nombre: 'Pantalón flare naranja',
     precio: 58000,
     moneda: 'ARS',
-    categoria: 'Pantalones',
-    subcategoria: 'Flare',
+    genero: 'Mujer',
+    categoria: 'Partes de abajo',
+    subcategoria: 'Pantalones',
     descripcion:
       'Pantalón de tiro medio con pierna acampanada desde la rodilla. Cae largo sobre el ' +
       'calzado y estiliza la silueta.',
@@ -110,7 +124,8 @@ const CATALOGO_CRUDO = [
       { talle: 'L', stock: 2 },
     ],
     medidas: { largo: '104 cm', cintura: '66-76 cm', cadera: '92-102 cm' },
-    materiales: 'Símil cuero elastizado, forrería de tricot',
+    materiales: ['Cuero/Cuerina'],
+    composicion: 'Símil cuero elastizado, forrería de tricot',
     color: 'Naranja',
     estilo: ['Y2K', 'Vintage'],
     imagenes: ['/img/productos/pantalon-naranja.png'],
@@ -121,7 +136,8 @@ const CATALOGO_CRUDO = [
     nombre: 'Blusa encaje victoriana',
     precio: 62000,
     moneda: 'ARS',
-    categoria: 'Tops',
+    genero: 'Mujer',
+    categoria: 'Partes de arriba',
     subcategoria: 'Blusas',
     descripcion:
       'Blusa de encaje con cuello alto de guipur y escote profundo en V. Confección artesanal, ' +
@@ -131,7 +147,8 @@ const CATALOGO_CRUDO = [
       { talle: 'M', stock: 2 },
     ],
     medidas: { largo: '56 cm', busto: '84-94 cm', cintura: '68-78 cm' },
-    materiales: 'Encaje de algodón, guipur, botones de nácar',
+    materiales: ['Encaje'],
+    composicion: 'Encaje de algodón, guipur, botones de nácar',
     color: 'Blanco',
     estilo: ['Gótico', 'Vintage'],
     imagenes: ['/img/productos/blusa-encaje.png'],
@@ -142,7 +159,8 @@ const CATALOGO_CRUDO = [
     nombre: 'Corset azul satinado',
     precio: 54000,
     moneda: 'ARS',
-    categoria: 'Tops',
+    genero: 'Mujer',
+    categoria: 'Partes de arriba',
     subcategoria: 'Corsets',
     descripcion:
       'Corset con ballenas y cierre metálico al frente. Estructura firme que marca la cintura, ' +
@@ -153,7 +171,8 @@ const CATALOGO_CRUDO = [
       { talle: 'L', stock: 1 },
     ],
     medidas: { largo: '36 cm', busto: '80-90 cm', cintura: '62-72 cm' },
-    materiales: 'Satén, ballenas de acero, cierre metálico',
+    materiales: ['Satén'],
+    composicion: 'Satén, ballenas de acero, cierre metálico',
     color: 'Azul',
     estilo: ['Gótico', 'Fiesta'],
     imagenes: ['/img/productos/corset-azul.png'],
@@ -164,8 +183,9 @@ const CATALOGO_CRUDO = [
     nombre: 'Pollera lentejuelas dorada',
     precio: 48000,
     moneda: 'ARS',
-    categoria: 'Polleras',
-    subcategoria: 'Mini',
+    genero: 'Mujer',
+    categoria: 'Partes de abajo',
+    subcategoria: 'Polleras',
     descripcion:
       'Mini de lentejuelas cosidas sobre base elastizada. Tiro bajo y calce ajustado. ' +
       'Es la prenda estrella de la temporada: se hicieron pocas unidades.',
@@ -175,7 +195,8 @@ const CATALOGO_CRUDO = [
       { talle: 'L', stock: 0 },
     ],
     medidas: { largo: '34 cm', cintura: '64-74 cm', cadera: '88-98 cm' },
-    materiales: 'Lentejuelas doradas, base elastizada, forro de tricot',
+    materiales: ['Lentejuelas'],
+    composicion: 'Lentejuelas doradas, base elastizada, forro de tricot',
     color: 'Dorado',
     estilo: ['Y2K', 'Fiesta'],
     imagenes: [
@@ -191,8 +212,9 @@ const CATALOGO_CRUDO = [
     nombre: 'Set negro con cadenas',
     precio: 78000,
     moneda: 'ARS',
-    categoria: 'Vestidos',
-    subcategoria: 'Sets',
+    genero: 'Mujer',
+    categoria: 'Conjuntos',
+    subcategoria: 'Dos piezas',
     descripcion:
       'Top de satén con breteles cruzados y apliques de cadena, más pantalón al tono. ' +
       'Se vende como set, aunque cada pieza funciona sola.',
@@ -202,7 +224,8 @@ const CATALOGO_CRUDO = [
       { talle: 'L', stock: 0 },
     ],
     medidas: { largo: '92 cm', busto: '80-90 cm', cintura: '64-74 cm' },
-    materiales: 'Punto negro, herrería metálica, gasa',
+    materiales: ['Satén'],
+    composicion: 'Punto negro, herrería metálica, gasa',
     color: 'Negro',
     estilo: ['Gótico', 'Fiesta'],
     imagenes: ['/img/productos/conjunto-negro.png'],
@@ -238,24 +261,32 @@ export function buscarProducto(id) {
 // Solo lo que la tienda publica muestra.
 export const CATALOGO = PRODUCTOS.filter((p) => p.activo)
 
-// Las opciones de los filtros se derivan del catalogo, asi no hay que mantener
-// dos listas en paralelo cuando se carga un producto nuevo.
-const unicos = (valores) => [...new Set(valores)].sort((a, b) => a.localeCompare(b, 'es'))
+// --- Disponibilidad de las opciones de filtro --------------------------------
 
-export const CATEGORIAS = unicos(CATALOGO.map((p) => p.categoria))
-export const COLORES = unicos(CATALOGO.map((p) => p.color))
-export const ESTILOS = unicos(CATALOGO.flatMap((p) => p.estilo))
+// Las opciones salen de taxonomia.js, pero necesitamos saber cuáles tienen prendas
+// para deshabilitar las vacías en vez de ofrecer un filtro que no devuelve nada.
+const VALORES_EN_CATALOGO = {
+  genero: new Set(CATALOGO.map((p) => p.genero)),
+  categoria: new Set(CATALOGO.map((p) => p.categoria)),
+  subcategoria: new Set(CATALOGO.map((p) => p.subcategoria)),
+  color: new Set(CATALOGO.map((p) => p.color)),
+  talle: new Set(CATALOGO.flatMap((p) => p.talles.filter((t) => t.stock > 0).map((t) => t.talle))),
+  material: new Set(CATALOGO.flatMap((p) => p.materiales)),
+  estilo: new Set(CATALOGO.flatMap((p) => p.estilo)),
+}
 
-// Los talles se ordenan por convencion, no alfabeticamente.
-const ORDEN_TALLES = ['XS', 'S', 'M', 'L', 'XL', 'Único']
-export const TALLES = unicos(CATALOGO.flatMap((p) => p.talles.map((t) => t.talle))).sort(
+export function hayProductosCon(campo, valor) {
+  return VALORES_EN_CATALOGO[campo]?.has(valor) ?? false
+}
+
+// Los colores sí se derivan del catálogo: no son una lista cerrada como el resto,
+// cada prenda puede traer uno nuevo.
+export const COLORES = [...VALORES_EN_CATALOGO.color].sort((a, b) => a.localeCompare(b, 'es'))
+
+// Los talles también, pero ordenados por convención.
+export const TALLES = [...new Set(CATALOGO.flatMap((p) => p.talles.map((t) => t.talle)))].sort(
   (a, b) => ORDEN_TALLES.indexOf(a) - ORDEN_TALLES.indexOf(b),
 )
-
-export function subcategoriasDe(categorias) {
-  const fuente = categorias.length ? CATALOGO.filter((p) => categorias.includes(p.categoria)) : CATALOGO
-  return unicos(fuente.map((p) => p.subcategoria))
-}
 
 export const PRECIO_MAXIMO = Math.max(...CATALOGO.map((p) => p.precio))
 export const PRECIO_MINIMO = Math.min(...CATALOGO.map((p) => p.precio))

@@ -284,6 +284,15 @@ ul {
   color: var(--crema);
 }
 
+/* Opción de la taxonomía que todavía no tiene ninguna prenda cargada. */
+.chip[disabled] {
+  cursor: not-allowed;
+  border-style: dashed;
+  border-color: rgba(10, 10, 10, 0.18);
+  color: rgba(10, 10, 10, 0.32);
+  background: transparent;
+}
+
 /* ===========================================================================
    Header
    =========================================================================== */

@@ -82,9 +82,35 @@ Todo vive en `src/data/productos.js`. El stock va **por talle**: si `S` está en
 se puede agregar aunque `M` tenga unidades. `activo: false` saca la prenda de la
 tienda sin borrarla.
 
-Las opciones de los filtros (categorías, colores, estilos, talles, rango de precio)
-se derivan solas del catálogo, así que al cargar un producto con una categoría nueva
-el filtro aparece sin tocar nada más.
+Cuidado con los dos campos de material: `materiales` es la lista de tags con la que
+filtra la tienda (tienen que salir de `taxonomia.js`), y `composicion` es el texto
+libre que se muestra en la ficha.
+
+## Filtros y taxonomía
+
+Las opciones viven en `src/data/taxonomia.js` y están organizadas en ejes separados:
+
+| Filtro | Opciones |
+|---|---|
+| Categoría (principal) | Partes de arriba · Partes de abajo · Abrigos · Conjuntos · Accesorios · Cuties |
+| Género | Mujer · Hombre |
+| Subcategoría | Depende de la categoría elegida |
+| Talle · Color | Salen del catálogo |
+| Material | Jean · Piel · Cuero/Cuerina · Encaje · Satén · Punto · Algodón · Lentejuelas |
+| Estilo | Y2K · Gótico · Vintage · Fiesta · Streetwear |
+| Precio · Disponibilidad | — |
+
+La taxonomía se declara a mano en vez de derivarse de los productos: si saliera de
+ellos, una categoría sin prendas cargadas desaparecería del filtro. Las opciones que
+todavía no tienen ninguna prenda se muestran **deshabilitadas** y se activan solas
+al cargar la primera.
+
+Dos criterios de armado, para no repetir el mismo filtro dos veces:
+
+- **"Jean" es material, no subcategoría.** Un jean se encuentra combinando
+  "Partes de abajo" + "Jean", y así el mismo filtro sirve para una campera de jean.
+- **Las categorías viejas** (Tops, Pantalones, Polleras, Vestidos) pasaron a ser
+  subcategorías, porque "partes de arriba/abajo" ya cubre ese nivel.
 
 ## WhatsApp
 
