@@ -1,0 +1,13 @@
+node_modules
+dist
+.env
+.env.local
+.DS_Store
+*.log
+
+# Configuración local de Claude Code (tiene rutas de esta máquina)
+.claude/
+
+# Material de origen: el PDF del portfolio y las fotos sin procesar. Pesan ~24 MB
+# y no hacen falta para el build; las versiones que usa el sitio están en public/img.
+multimedia/
