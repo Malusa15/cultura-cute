@@ -64,7 +64,7 @@ export const SERVICIOS = [
     titulo: 'Piezas únicas',
     texto:
       'Series cortas de confección artesanal. Cada pieza se hace de a una, ' +
-      'así que cuando se agota difícilmente vuelva igual.',
+      'así que cuando se agota difícilmente volvemos a hacerla igual.',
     consulta: 'Hola! Quiero consultar por las piezas únicas',
   },
   {
