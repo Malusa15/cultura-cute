@@ -55,8 +55,8 @@ export const SERVICIOS = [
     id: 'a-medida',
     titulo: 'Prendas a pedido',
     texto:
-      'Diseñamos y confeccionamos la prenda que tenés en la cabeza, tomada a tus medidas. ' +
-      'Arrancamos con una charla, bocetos y elección de telas.',
+      'Diseñamos y confeccionamos la prenda que tenés en la cabeza: tomamos las medidas, ' +
+      'hacemos los bocetos y seleccionamos las telas. Creando tu pieza única.',
     consulta: 'Hola! Quiero consultar por una prenda a medida',
   },
   {
