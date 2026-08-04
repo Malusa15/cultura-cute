@@ -1456,9 +1456,9 @@ ul {
 }
 
 @media (max-width: 719px) {
-  /* El eyebrow del header ocupa demasiado en pantallas chicas: dejamos dos items. */
-  .header__eyebrow span:nth-child(2),
-  .header__eyebrow span:nth-child(3) {
+  /* El eyebrow del header ocupa demasiado en pantallas chicas: dejamos el primero
+     y el último, que son los que anclan la franja a los bordes. */
+  .header__eyebrow span:not(:first-child):not(:last-child) {
     display: none;
   }
 }

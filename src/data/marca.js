@@ -16,7 +16,7 @@ export const MARCA = {
   ciudad: 'Mar del Plata, Argentina',
 
   // La franja superior del portfolio ("2026 · creative · portfolio · photography")
-  eyebrow: ['2026', 'artesanal', 'y2k', 'mar del plata'],
+  eyebrow: ['2026', 'artesanal', 'mar del plata'],
 
   sobreNosotras:
     'Cultura.Cute nace para quienes entienden la ropa como una forma de expresión. ' +
