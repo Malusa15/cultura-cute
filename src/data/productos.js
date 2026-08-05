@@ -1,8 +1,11 @@
 import { asset } from '../lib/rutas.js'
-import { ORDEN_TALLES } from './taxonomia.js'
 
-// Catalogo de ejemplo. Las fotos salen del portfolio 2026; los nombres, precios y
-// medidas son inventados y hay que reemplazarlos por los reales.
+// Catálogo de respaldo: es lo que muestra la tienda mientras no estén cargadas
+// las credenciales de Supabase. Una vez conectada la base, los productos salen
+// de ahí y este archivo queda solo como referencia de la forma de los datos.
+//
+// Las fotos salen del portfolio 2026; los nombres, precios y medidas son
+// inventados y hay que reemplazarlos por los reales.
 //
 // El stock va POR TALLE, no por producto: si S esta en 0 no se puede agregar al
 // carrito aunque M tenga unidades. `activo: false` oculta la prenda de la tienda
@@ -240,53 +243,6 @@ export const PRODUCTOS = CATALOGO_CRUDO.map((producto) => ({
   imagenes: producto.imagenes.map(asset),
 }))
 
-// --- Helpers de catalogo -----------------------------------------------------
-
-export function stockTotal(producto) {
-  return producto.talles.reduce((acc, t) => acc + t.stock, 0)
-}
-
-export function stockDeTalle(producto, talle) {
-  return producto.talles.find((t) => t.talle === talle)?.stock ?? 0
-}
-
-export function hayStock(producto) {
-  return stockTotal(producto) > 0
-}
-
-export function buscarProducto(id) {
-  return PRODUCTOS.find((p) => p.id === id)
-}
-
-// Solo lo que la tienda publica muestra.
-export const CATALOGO = PRODUCTOS.filter((p) => p.activo)
-
-// --- Disponibilidad de las opciones de filtro --------------------------------
-
-// Las opciones salen de taxonomia.js, pero necesitamos saber cuáles tienen prendas
-// para deshabilitar las vacías en vez de ofrecer un filtro que no devuelve nada.
-const VALORES_EN_CATALOGO = {
-  genero: new Set(CATALOGO.map((p) => p.genero)),
-  categoria: new Set(CATALOGO.map((p) => p.categoria)),
-  subcategoria: new Set(CATALOGO.map((p) => p.subcategoria)),
-  color: new Set(CATALOGO.map((p) => p.color)),
-  talle: new Set(CATALOGO.flatMap((p) => p.talles.filter((t) => t.stock > 0).map((t) => t.talle))),
-  material: new Set(CATALOGO.flatMap((p) => p.materiales)),
-  estilo: new Set(CATALOGO.flatMap((p) => p.estilo)),
-}
-
-export function hayProductosCon(campo, valor) {
-  return VALORES_EN_CATALOGO[campo]?.has(valor) ?? false
-}
-
-// Los colores sí se derivan del catálogo: no son una lista cerrada como el resto,
-// cada prenda puede traer uno nuevo.
-export const COLORES = [...VALORES_EN_CATALOGO.color].sort((a, b) => a.localeCompare(b, 'es'))
-
-// Los talles también, pero ordenados por convención.
-export const TALLES = [...new Set(CATALOGO.flatMap((p) => p.talles.map((t) => t.talle)))].sort(
-  (a, b) => ORDEN_TALLES.indexOf(a) - ORDEN_TALLES.indexOf(b),
-)
-
-export const PRECIO_MAXIMO = Math.max(...CATALOGO.map((p) => p.precio))
-export const PRECIO_MINIMO = Math.min(...CATALOGO.map((p) => p.precio))
+// Lo que se deriva del catálogo (colores, talles, rango de precio, qué opciones
+// de filtro tienen prendas) se calcula en CatalogoContext, porque ahí es donde
+// se sabe si los datos vienen de acá o de Supabase.

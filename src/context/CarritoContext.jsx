@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { buscarProducto, stockDeTalle } from '../data/productos.js'
+import { stockDeTalle } from '../lib/stock.js'
+import { useCatalogo } from './CatalogoContext.jsx'
 
 const CarritoContext = createContext(null)
 
@@ -30,6 +31,7 @@ function leerStorage() {
 }
 
 export function CarritoProvider({ children }) {
+  const { buscarProducto } = useCatalogo()
   const [lineas, setLineas] = useState(leerStorage)
   const [abierto, setAbierto] = useState(false)
 
@@ -61,7 +63,7 @@ export function CarritoProvider({ children }) {
         },
       ]
     })
-  }, [lineas])
+  }, [lineas, buscarProducto])
 
   const total = useMemo(() => items.reduce((acc, item) => acc + item.subtotal, 0), [items])
   const unidades = useMemo(() => items.reduce((acc, item) => acc + item.cantidad, 0), [items])
@@ -106,7 +108,7 @@ export function CarritoProvider({ children }) {
           : linea,
       )
     })
-  }, [])
+  }, [buscarProducto])
 
   const quitar = useCallback((productoId, talle) => {
     setLineas((actuales) =>

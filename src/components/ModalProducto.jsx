@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useCarrito } from '../context/CarritoContext.jsx'
-import { stockDeTalle, stockTotal } from '../data/productos.js'
+import { stockDeTalle, stockTotal } from '../lib/stock.js'
 import { precio } from '../lib/formato.js'
 import { usePanel } from '../hooks/usePanel.js'
 import { IconoCerrar } from './Iconos.jsx'
