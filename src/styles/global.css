@@ -1476,3 +1476,75 @@ ul {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ===========================================================================
+   Pedir el nombre antes de mandar el pedido
+   =========================================================================== */
+
+/* Va por encima del carrito (z-index 100), que sigue visible detrás: si la
+   clienta cancela, encuentra su pedido tal cual lo dejó. */
+.nombre-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(3px);
+  animation: aparecer 200ms ease-out;
+}
+
+.nombre-modal__caja {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+  background: var(--crema);
+  border: 2px solid var(--rojo);
+  border-radius: var(--radio-grande);
+  animation: subir 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.nombre-modal__titulo {
+  font-size: 1.6rem;
+  line-height: 1.1;
+  color: var(--rojo);
+}
+
+.nombre-modal__texto {
+  font-size: 0.88rem;
+  opacity: 0.75;
+}
+
+.nombre-modal__campo {
+  display: block;
+}
+
+.nombre-modal__input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--crema);
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: inherit;
+}
+
+.nombre-modal__input:focus-visible {
+  outline: 2px solid var(--rojo);
+  outline-offset: 1px;
+}
+
+.nombre-modal__botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nombre-modal__botones .boton {
+  flex: 1 1 140px;
+  justify-content: center;
+}

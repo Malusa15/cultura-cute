@@ -20,6 +20,17 @@ export default function Ventas() {
   const visibles = filtro === 'todas' ? ventas : ventas.filter((v) => v.estado === filtro)
   const pendientes = ventas.filter((v) => v.estado === 'pendiente').length
 
+  // Un botón por estado, con cuánto hay de cada uno. El conteo sale de la lista
+  // completa, así no cambia según lo que estés mirando.
+  const filtros = [
+    { id: 'todas', label: 'Todas', cantidad: ventas.length },
+    ...Object.entries(ESTADOS_VENTA).map(([clave, texto]) => ({
+      id: clave,
+      label: texto,
+      cantidad: ventas.filter((v) => v.estado === clave).length,
+    })),
+  ]
+
   // Confirmar o cancelar mueve stock, así que la tienda tiene que enterarse.
   const cambiarEstado = (id, estado) =>
     correr(async () => {
@@ -31,24 +42,22 @@ export default function Ventas() {
     <>
       <div className="admin__barra">
         <h2 className="admin__seccion">Ventas</h2>
-        <div className="admin-filtro-estado">
-          <label className="admin-campo__label" htmlFor="filtro-ventas">
-            Ver
-          </label>
-          <select
-            id="filtro-ventas"
-            className="admin-campo__control"
-            value={filtro}
-            onChange={(e) => setFiltro(e.target.value)}
+      </div>
+
+      <div className="admin-filtros" role="group" aria-label="Filtrar ventas por estado">
+        {filtros.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            className="admin-filtro"
+            aria-pressed={filtro === f.id}
+            data-estado={f.id}
+            onClick={() => setFiltro(f.id)}
           >
-            <option value="todas">Todas</option>
-            {Object.entries(ESTADOS_VENTA).map(([clave, texto]) => (
-              <option key={clave} value={clave}>
-                {texto}
-              </option>
-            ))}
-          </select>
-        </div>
+            {f.label}
+            <span className="admin-filtro__cuenta">{f.cantidad}</span>
+          </button>
+        ))}
       </div>
 
       <p className="admin-ayuda">

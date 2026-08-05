@@ -11,26 +11,32 @@ import { IconoCerrar, IconoWhatsApp } from './Iconos.jsx'
 export default function Carrito() {
   const { items, total, abierto, cerrar, cambiarCantidad, quitar } = useCarrito()
   const [enviando, setEnviando] = useState(false)
+  // Antes de mandar el pedido se pide el nombre, para que la venta no llegue al
+  // panel como "sin nombre".
+  const [pidiendoNombre, setPidiendoNombre] = useState(false)
+  const [nombre, setNombre] = useState('')
 
   usePanel(abierto, cerrar)
 
-  // Al finalizar, el pedido queda guardado en la base (entra al panel como venta
-  // pendiente) y recién después se abre WhatsApp con el mensaje.
+  // El pedido queda guardado en la base (entra al panel como venta pendiente) y
+  // recién después se abre WhatsApp con el mensaje.
   //
   // Si la base falla, igual se abre el chat: perder el registro es molesto, pero
   // perder la venta es peor.
-  const finalizar = async () => {
-    if (enviando || items.length === 0) return
+  const finalizar = async (evento) => {
+    evento.preventDefault()
+    if (enviando || items.length === 0 || !nombre.trim()) return
     setEnviando(true)
 
     // La pestaña se abre ANTES del await a propósito: si se abriera después, el
-    // navegador la trataría como popup y la bloquearía.
+    // navegador la trataría como popup y la bloquearía. Este handler todavía
+    // cuenta como gesto de la clienta, así que acá se puede.
     const pestana = window.open('', '_blank')
 
     let numero = null
     if (supabaseConfigurado) {
       try {
-        numero = (await registrarPedido({ items }))?.numero ?? null
+        numero = (await registrarPedido({ nombre: nombre.trim(), items }))?.numero ?? null
       } catch (e) {
         console.error('No se pudo registrar el pedido:', e?.message ?? String(e))
       }
@@ -41,6 +47,7 @@ export default function Carrito() {
     else window.location.href = url
 
     setEnviando(false)
+    setPidiendoNombre(false)
   }
 
   if (!abierto) return null
@@ -137,11 +144,10 @@ export default function Carrito() {
               <button
                 type="button"
                 className="boton boton--wsp boton--ancho"
-                onClick={finalizar}
-                disabled={enviando}
+                onClick={() => setPidiendoNombre(true)}
               >
                 <IconoWhatsApp width={18} height={18} />
-                {enviando ? 'Preparando el pedido…' : 'Finalizar compra'}
+                Finalizar compra
               </button>
 
               <p className="carrito__nota">
@@ -152,6 +158,53 @@ export default function Carrito() {
           </>
         )}
       </aside>
+
+      {/* Se monta por encima del carrito, no lo reemplaza: si cancela, vuelve a
+          ver su pedido intacto. */}
+      {pidiendoNombre && (
+        <div className="nombre-modal" role="dialog" aria-modal="true" aria-labelledby="nombre-titulo">
+          <form className="nombre-modal__caja" onSubmit={finalizar}>
+            <h3 id="nombre-titulo" className="nombre-modal__titulo gotica">
+              ¿A nombre de quién?
+            </h3>
+            <p className="nombre-modal__texto">
+              Lo usamos para identificar tu pedido cuando nos escribas.
+            </p>
+
+            <label className="nombre-modal__campo">
+              <span className="filtro__titulo">Nombre</span>
+              <input
+                className="nombre-modal__input"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                placeholder="Tu nombre y apellido"
+                autoFocus
+                required
+                maxLength={80}
+              />
+            </label>
+
+            <div className="nombre-modal__botones">
+              <button
+                type="button"
+                className="boton boton--fantasma"
+                onClick={() => setPidiendoNombre(false)}
+                disabled={enviando}
+              >
+                Volver
+              </button>
+              <button
+                type="submit"
+                className="boton boton--wsp"
+                disabled={enviando || !nombre.trim()}
+              >
+                <IconoWhatsApp width={18} height={18} />
+                {enviando ? 'Preparando…' : 'Ir a WhatsApp'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </>
   )
 }

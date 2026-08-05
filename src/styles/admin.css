@@ -525,14 +525,51 @@
   gap: 16px;
 }
 
-.admin-filtro-estado {
+/* Botonera de filtros por estado, con el conteo de cada uno. */
+.admin-filtros {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
-.admin-filtro-estado .admin-campo__control {
-  width: auto;
+.admin-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border: 1.5px solid var(--borde);
+  border-radius: 999px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: inherit;
+  cursor: pointer;
+  transition: background var(--transicion), border-color var(--transicion);
+}
+
+.admin-filtro:hover {
+  border-color: var(--rojo);
+}
+
+.admin-filtro[aria-pressed='true'] {
+  background: var(--rojo);
+  border-color: var(--rojo);
+  color: var(--crema);
+}
+
+.admin-filtro__cuenta {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--crema-sombra);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rojo);
+}
+
+.admin-filtro[aria-pressed='true'] .admin-filtro__cuenta {
+  background: var(--crema);
 }
 
 .admin-ayuda--alerta {
