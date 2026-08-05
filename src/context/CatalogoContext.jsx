@@ -53,7 +53,14 @@ export function CatalogoProvider({ children }) {
       setProductos(await traerCatalogoPublico())
     } catch (e) {
       // Si la base falla, mostramos el catálogo local antes que una tienda vacía.
-      console.error('No se pudo leer el catálogo de Supabase', e)
+      // Los errores de Supabase son objetos: sin desarmarlos, la consola muestra
+      // "[object Object]" y no se sabe qué pasó.
+      console.error(
+        'No se pudo leer el catálogo de Supabase:',
+        e?.message ?? String(e),
+        e?.details ?? '',
+        e?.hint ?? '',
+      )
       setError(e)
       setProductos(PRODUCTOS)
     } finally {

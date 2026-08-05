@@ -20,8 +20,12 @@ export function aProducto(fila) {
     nombre: fila.nombre,
     precio: fila.precio,
     genero: fila.genero ?? null,
+    // La tienda filtra por nombre; el formulario del panel necesita los ids.
     categoria: fila.categorias?.nombre ?? null,
     subcategoria: fila.subcategorias?.nombre ?? null,
+    categoria_id: fila.categoria_id ?? null,
+    subcategoria_id: fila.subcategoria_id ?? null,
+    orden: fila.orden ?? 0,
     descripcion: fila.descripcion ?? '',
     medidas: fila.medidas ?? {},
     materiales: fila.materiales ?? [],
