@@ -136,11 +136,28 @@ Cambiarlo ahí lo actualiza en todo el sitio.
 - [ ] Lista real de estilos/tags
 - [ ] Fotos de producto propias (hoy son recortes del PDF, ~533x800 px)
 
-**Etapa 2 — Supabase y panel admin** (todavía no arrancó):
+**Etapa 2 — Supabase y panel admin** (en curso, rama `admin-supabase`):
 
-- [ ] Mover el catálogo de `productos.js` a Supabase
-- [ ] Supabase Storage para las imágenes
-- [ ] `/admin` con login (Supabase Auth, altas manuales, sin registro público)
-- [ ] ABM de productos, stock por talle, activar/desactivar, gestión de categorías
-- [ ] Definir qué cuentas tienen acceso al panel
-- [ ] Deploy en Vercel o Netlify
+Hecho:
+
+- [x] Esquema de la base con RLS (`supabase/schema.sql`) y carga inicial (`supabase/seed.sql`)
+- [x] Cliente de Supabase y capa de datos (`src/lib/supabase.js`, `src/lib/catalogo.js`)
+- [x] `CatalogoContext`: la tienda lee de Supabase si hay credenciales y, si no,
+      sigue andando con el catálogo local
+
+Falta:
+
+- [ ] Router y ruta `/admin` (con el fallback de `404.html` que necesita GitHub Pages)
+- [ ] Pantalla de login con Supabase Auth y guardia de sesión
+- [ ] Panel: tabla de prendas, publicar/despublicar, eliminar con confirmación
+- [ ] Formulario de alta y edición con subida de fotos a Supabase Storage
+- [ ] Gestión de categorías y subcategorías desde el panel
+- [ ] Cargar `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en el workflow de deploy
+
+### Cómo retomar
+
+1. Crear el proyecto en [supabase.com](https://supabase.com) (plan gratis).
+2. En el SQL Editor, correr `supabase/schema.sql` y después `supabase/seed.sql`.
+3. En **Authentication > Providers**, desactivar el registro público y dar de alta
+   a mano las cuentas que van a entrar al panel.
+4. Copiar `.env.example` a `.env.local` y completar la URL y la anon key.

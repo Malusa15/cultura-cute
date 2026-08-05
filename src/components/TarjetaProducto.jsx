@@ -1,5 +1,5 @@
 import { precio } from '../lib/formato.js'
-import { stockTotal } from '../data/productos.js'
+import { stockTotal } from '../lib/stock.js'
 
 const UMBRAL_ULTIMAS = 3
 

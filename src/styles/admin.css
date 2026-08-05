@@ -1,0 +1,469 @@
+/* ===========================================================================
+   Panel de administración
+   Comparte la paleta y las tipografías del sitio (global.css), pero con una
+   densidad más de herramienta que de vidriera: fuentes chicas, mucha tabla.
+   =========================================================================== */
+
+.admin {
+  min-height: 100vh;
+  background: var(--crema);
+  font-family: var(--sans);
+  font-size: 15px;
+}
+
+.admin__header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(16px, 4vw, 40px);
+  background: var(--rojo);
+  color: var(--crema);
+}
+
+.admin__marca {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin__titulo {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.admin__subtitulo {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.admin__solapas {
+  display: flex;
+  gap: 6px;
+}
+
+.admin__solapa {
+  padding: 8px 18px;
+  border: 1.5px solid rgba(255, 252, 232, 0.5);
+  border-radius: var(--radio);
+  background: transparent;
+  color: var(--crema);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  transition: background var(--transicion), border-color var(--transicion);
+}
+
+.admin__solapa:hover {
+  background: rgba(255, 252, 232, 0.14);
+}
+
+.admin__solapa[aria-current='true'] {
+  background: var(--crema);
+  border-color: var(--crema);
+  color: var(--rojo);
+}
+
+.admin__sesion {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.82rem;
+}
+
+.admin__mail {
+  opacity: 0.8;
+}
+
+.admin__link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity var(--transicion);
+}
+
+.admin__link:hover {
+  opacity: 0.7;
+}
+
+.admin__link--peligro {
+  color: var(--rojo);
+}
+
+.admin__header .admin__link--peligro {
+  color: var(--crema);
+}
+
+.admin__contenido {
+  padding: clamp(20px, 4vw, 40px);
+  max-width: 1280px;
+  margin-inline: auto;
+}
+
+.admin__barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.admin__seccion {
+  font-family: var(--gotica);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--rojo);
+  text-transform: uppercase;
+}
+
+.admin__vacio {
+  padding-block: 48px;
+  text-align: center;
+  font-style: italic;
+}
+
+.admin-ayuda {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  margin-bottom: 12px;
+}
+
+.admin-error {
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border: 1.5px solid var(--rojo);
+  border-radius: var(--radio);
+  background: rgba(169, 23, 11, 0.08);
+  color: var(--rojo);
+  font-size: 0.86rem;
+}
+
+/* --- Login ---------------------------------------------------------------- */
+
+.admin-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--rojo);
+  font-family: var(--sans);
+}
+
+.admin-login__caja {
+  width: min(100%, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(28px, 5vw, 44px);
+  background: var(--crema);
+  border-radius: var(--radio-grande);
+  box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.28);
+}
+
+.admin-login__logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  align-self: center;
+}
+
+.admin-login__titulo {
+  font-size: 2rem;
+  color: var(--rojo);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.admin-login__caja code {
+  font-size: 0.82rem;
+  background: rgba(169, 23, 11, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* --- Campos --------------------------------------------------------------- */
+
+.admin-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-campo__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rojo);
+}
+
+.admin-campo__control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--blanco);
+  color: var(--tinta);
+  font-family: var(--sans);
+  font-size: 0.92rem;
+}
+
+.admin-campo__control:focus {
+  outline: none;
+  border-color: var(--rojo);
+}
+
+.admin-campo__control[disabled] {
+  background: var(--crema-sombra);
+  opacity: 0.7;
+}
+
+.admin-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+/* --- Tabla ---------------------------------------------------------------- */
+
+.admin-tabla__scroll {
+  overflow-x: auto;
+}
+
+.admin-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.admin-tabla th,
+.admin-tabla td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--borde);
+  vertical-align: middle;
+}
+
+.admin-tabla th {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rojo);
+  white-space: nowrap;
+}
+
+/* Las prendas ocultas se ven apagadas para distinguirlas de un vistazo. */
+.admin-tabla tr[data-inactivo='true'] {
+  opacity: 0.5;
+}
+
+.admin-tabla__foto {
+  width: 44px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--borde);
+  display: block;
+}
+
+.admin-tabla__foto--vacia {
+  background: var(--crema-sombra);
+}
+
+.admin-tabla__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-tabla [data-agotado='true'] {
+  color: var(--rojo);
+  font-weight: 700;
+}
+
+.admin-estado {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+}
+
+.admin-estado[data-activo='true'] {
+  color: #128c7e;
+}
+
+.admin-estado[data-activo='false'] {
+  color: rgba(10, 10, 10, 0.5);
+}
+
+/* --- Formulario ----------------------------------------------------------- */
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.admin-form__grilla {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.admin-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 18px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-grande);
+}
+
+.admin-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.admin-fila .admin-campo__control {
+  flex: 1 1 140px;
+  width: auto;
+}
+
+.admin-fila--alta {
+  margin-bottom: 24px;
+}
+
+.admin-form__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1.5px solid var(--borde);
+}
+
+.admin-form__botones {
+  display: flex;
+  gap: 12px;
+}
+
+/* --- Fotos ---------------------------------------------------------------- */
+
+.admin-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-foto {
+  width: 110px;
+}
+
+.admin-foto img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radio);
+  border: 1px solid var(--borde);
+}
+
+.admin-foto__acciones {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  padding-top: 6px;
+}
+
+/* --- Categorías ----------------------------------------------------------- */
+
+.admin-categorias {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.admin-categoria {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-grande);
+}
+
+.admin-categoria__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-categoria__nombre {
+  font-family: var(--gotica);
+  font-size: 1.3rem;
+  color: var(--rojo);
+  text-transform: uppercase;
+}
+
+.admin-categoria__header .admin-ayuda {
+  margin: 0;
+}
+
+.admin-subcategorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-subcategorias li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (min-width: 720px) {
+  .admin-form__grilla {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-campo--ancho {
+    grid-column: 1 / -1;
+  }
+
+  .admin-categorias {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-form__grilla {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -29,7 +29,14 @@ jobs:
           cache: npm
 
       - run: npm ci
+
       - run: npm run build
+        # Van como variables y no como secrets a propósito: la anon key está
+        # diseñada para viajar en el JavaScript del sitio, así que igual termina
+        # siendo pública. Lo que protege la base son las políticas de RLS.
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { CATALOGO, hayProductosCon, hayStock } from '../data/productos.js'
+import { useCatalogo } from '../context/CatalogoContext.jsx'
+import { hayStock } from '../lib/stock.js'
 import { linkWhatsApp } from '../lib/whatsapp.js'
 import Filtros, { FILTROS_INICIALES, hayFiltrosActivos } from './Filtros.jsx'
 import TarjetaProducto from './TarjetaProducto.jsx'
@@ -19,7 +20,8 @@ function pasaFiltros(producto, filtros) {
   if (filtros.estilos.length && !producto.estilo.some((e) => filtros.estilos.includes(e))) {
     return false
   }
-  if (producto.precio > filtros.precioMax) return false
+  // precioMax en null es "sin tope".
+  if (filtros.precioMax !== null && producto.precio > filtros.precioMax) return false
   if (filtros.soloDisponibles && !hayStock(producto)) return false
 
   // Filtrar por talle implica querer comprarlo: pedimos que ese talle tenga stock.
@@ -45,22 +47,23 @@ const CAMPOS_DE_TAXONOMIA = [
   ['estilo', 'estilos'],
 ]
 
-function seleccionSinPrendas(filtros) {
+function seleccionSinPrendas(filtros, hayProductosCon) {
   return CAMPOS_DE_TAXONOMIA.some(([campo, clave]) =>
     filtros[clave].some((valor) => !hayProductosCon(campo, valor)),
   )
 }
 
 export default function Tienda() {
+  const { catalogo, cargando, hayProductosCon } = useCatalogo()
   const [filtros, setFiltros] = useState(FILTROS_INICIALES)
   const [productoAbierto, setProductoAbierto] = useState(null)
 
   const visibles = useMemo(
-    () => CATALOGO.filter((producto) => pasaFiltros(producto, filtros)),
-    [filtros],
+    () => catalogo.filter((producto) => pasaFiltros(producto, filtros)),
+    [catalogo, filtros],
   )
 
-  const proximamente = visibles.length === 0 && seleccionSinPrendas(filtros)
+  const proximamente = visibles.length === 0 && seleccionSinPrendas(filtros, hayProductosCon)
 
   return (
     <section className="seccion" id="tienda" aria-labelledby="titulo-tienda">
@@ -73,7 +76,13 @@ export default function Tienda() {
 
         <Filtros filtros={filtros} setFiltros={setFiltros} resultados={visibles.length} />
 
-        {visibles.length > 0 && (
+        {cargando && (
+          <div className="tienda__vacio">
+            <p>Cargando prendas…</p>
+          </div>
+        )}
+
+        {!cargando && visibles.length > 0 && (
           <div className="grid-productos">
             {visibles.map((producto) => (
               <TarjetaProducto key={producto.id} producto={producto} alAbrir={setProductoAbierto} />
@@ -81,7 +90,7 @@ export default function Tienda() {
           </div>
         )}
 
-        {proximamente && (
+        {!cargando && proximamente && (
           <div className="tienda__vacio">
             <p className="tienda__proximamente">Próximamente</p>
             <p>
@@ -109,7 +118,7 @@ export default function Tienda() {
           </div>
         )}
 
-        {visibles.length === 0 && !proximamente && (
+        {!cargando && visibles.length === 0 && !proximamente && (
           <div className="tienda__vacio">
             <p>No hay prendas que coincidan con esos filtros.</p>
             {hayFiltrosActivos(filtros) && (

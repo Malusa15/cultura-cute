@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { COLORES, PRECIO_MAXIMO, PRECIO_MINIMO, TALLES, hayProductosCon } from '../data/productos.js'
+import { useCatalogo } from '../context/CatalogoContext.jsx'
 import {
   CATEGORIAS,
   DESCRIPCIONES_CATEGORIA,
@@ -11,6 +11,9 @@ import {
 import { precio } from '../lib/formato.js'
 import { IconoChevron, IconoFiltros } from './Iconos.jsx'
 
+// precioMax en null significa "sin tope". No se puede inicializar con el precio
+// más caro del catálogo porque ese valor ahora llega de Supabase y no se conoce
+// hasta después de la primera carga.
 export const FILTROS_INICIALES = {
   generos: [],
   categorias: [],
@@ -19,7 +22,7 @@ export const FILTROS_INICIALES = {
   colores: [],
   materiales: [],
   estilos: [],
-  precioMax: PRECIO_MAXIMO,
+  precioMax: null,
   soloDisponibles: false,
 }
 
@@ -32,7 +35,7 @@ export function hayFiltrosActivos(filtros) {
     filtros.colores.length > 0 ||
     filtros.materiales.length > 0 ||
     filtros.estilos.length > 0 ||
-    filtros.precioMax < PRECIO_MAXIMO ||
+    filtros.precioMax !== null ||
     filtros.soloDisponibles
   )
 }
@@ -41,6 +44,7 @@ export function hayFiltrosActivos(filtros) {
 // prendas cargadas: al elegirlas, la tienda muestra el cartel de "Próximamente"
 // en vez de un resultado vacío.
 function Chip({ valor, campo, activo, alAlternar, titulo }) {
+  const { hayProductosCon } = useCatalogo()
   const conPrendas = hayProductosCon(campo, valor)
 
   const ayuda = [titulo, conPrendas ? null : 'Próximamente'].filter(Boolean).join(' — ')
@@ -81,6 +85,7 @@ function GrupoChips({ titulo, campo, opciones, seleccionadas, alAlternar }) {
 
 export default function Filtros({ filtros, setFiltros, resultados }) {
   const [panelAbierto, setPanelAbierto] = useState(false)
+  const { colores, talles, precioMinimo, precioMaximo } = useCatalogo()
 
   // La subcategoría recién tiene sentido con una categoría elegida: sin filtrar
   // serían más de veinte chips sueltos.
@@ -101,6 +106,9 @@ export default function Filtros({ filtros, setFiltros, resultados }) {
       return siguiente
     })
   }
+
+  const topeActual = filtros.precioMax ?? precioMaximo
+  const hayRangoDePrecio = precioMaximo > precioMinimo
 
   return (
     <div className="filtros">
@@ -172,14 +180,14 @@ export default function Filtros({ filtros, setFiltros, resultados }) {
           <GrupoChips
             titulo="Talle"
             campo="talle"
-            opciones={TALLES}
+            opciones={talles}
             seleccionadas={filtros.talles}
             alAlternar={alternar('talles')}
           />
           <GrupoChips
             titulo="Color"
             campo="color"
-            opciones={COLORES}
+            opciones={colores}
             seleccionadas={filtros.colores}
             alAlternar={alternar('colores')}
           />
@@ -198,24 +206,26 @@ export default function Filtros({ filtros, setFiltros, resultados }) {
             alAlternar={alternar('estilos')}
           />
 
-          <div>
-            <label className="filtro__titulo" htmlFor="filtro-precio">
-              Precio
-            </label>
-            <input
-              id="filtro-precio"
-              className="filtro__rango"
-              type="range"
-              min={PRECIO_MINIMO}
-              max={PRECIO_MAXIMO}
-              step={1000}
-              value={filtros.precioMax}
-              onChange={(evento) =>
-                setFiltros((a) => ({ ...a, precioMax: Number(evento.target.value) }))
-              }
-            />
-            <span className="filtro__rango-valor">Hasta {precio(filtros.precioMax)}</span>
-          </div>
+          {hayRangoDePrecio && (
+            <div>
+              <label className="filtro__titulo" htmlFor="filtro-precio">
+                Precio
+              </label>
+              <input
+                id="filtro-precio"
+                className="filtro__rango"
+                type="range"
+                min={precioMinimo}
+                max={precioMaximo}
+                step={1000}
+                value={topeActual}
+                onChange={(evento) =>
+                  setFiltros((a) => ({ ...a, precioMax: Number(evento.target.value) }))
+                }
+              />
+              <span className="filtro__rango-valor">Hasta {precio(topeActual)}</span>
+            </div>
+          )}
 
           <div>
             <span className="filtro__titulo">Disponibilidad</span>

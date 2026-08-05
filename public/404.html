@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cultura.Cute</title>
+    <script>
+      // GitHub Pages sirve archivos estáticos: no sabe nada de las rutas del
+      // router, así que entrar directo a /cultura-cute/admin devuelve este 404.
+      // Guardamos la ruta pedida y volvemos al index, que la restaura antes de
+      // montar React.
+      ;(function () {
+        var base = '/cultura-cute/'
+        var ruta = location.pathname.slice(base.length) + location.search + location.hash
+        sessionStorage.setItem('cultura-cute:ruta-pendiente', ruta)
+        location.replace(base)
+      })()
+    </script>
+  </head>
+  <body></body>
+</html>
