@@ -3,6 +3,7 @@ import { cambiarPublicacion, eliminarProducto, traerTodosLosProductos } from '..
 import { avisarCatalogoActualizado } from '../context/CatalogoContext.jsx'
 import { stockTotal } from '../lib/stock.js'
 import { precio } from '../lib/formato.js'
+import { fotoUrl } from '../lib/rutas.js'
 
 export default function ListaProductos({ alEditar }) {
   const [productos, setProductos] = useState([])
@@ -88,7 +89,7 @@ export default function ListaProductos({ alEditar }) {
                       {producto.imagenes[0] ? (
                         <img
                           className="admin-tabla__foto"
-                          src={producto.imagenes[0]}
+                          src={fotoUrl(producto.imagenes[0])}
                           alt=""
                           loading="lazy"
                         />

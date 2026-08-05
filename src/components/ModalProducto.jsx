@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useCarrito } from '../context/CarritoContext.jsx'
 import { stockDeTalle, stockTotal } from '../lib/stock.js'
 import { precio } from '../lib/formato.js'
+import { fotoUrl } from '../lib/rutas.js'
 import { usePanel } from '../hooks/usePanel.js'
 import { IconoCerrar } from './Iconos.jsx'
 
@@ -52,7 +53,7 @@ export default function ModalProducto({ producto, alCerrar }) {
 
           <div className="modal__galeria">
             <div className="galeria__principal">
-              <img src={producto.imagenes[foto]} alt={producto.nombre} />
+              <img src={fotoUrl(producto.imagenes[foto])} alt={producto.nombre} />
             </div>
 
             {producto.imagenes.length > 1 && (
@@ -66,7 +67,7 @@ export default function ModalProducto({ producto, alCerrar }) {
                     aria-label={`Ver foto ${indice + 1}`}
                     onClick={() => setFoto(indice)}
                   >
-                    <img src={imagen} alt="" />
+                    <img src={fotoUrl(imagen)} alt="" />
                   </button>
                 ))}
               </div>

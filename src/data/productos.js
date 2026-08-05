@@ -1,5 +1,3 @@
-import { asset } from '../lib/rutas.js'
-
 // Catálogo de respaldo: es lo que muestra la tienda mientras no estén cargadas
 // las credenciales de Supabase. Una vez conectada la base, los productos salen
 // de ahí y este archivo queda solo como referencia de la forma de los datos.
@@ -236,12 +234,10 @@ const CATALOGO_CRUDO = [
   },
 ]
 
-// Las rutas se escriben arriba como "/img/..." para que se lean bien, y acá se les
-// agrega el prefijo del deploy una sola vez.
-export const PRODUCTOS = CATALOGO_CRUDO.map((producto) => ({
-  ...producto,
-  imagenes: producto.imagenes.map(asset),
-}))
+// Las rutas quedan como "/img/...", igual que en la base: el prefijo del deploy
+// se lo pone `fotoUrl` recién al pintar, para que las dos fuentes de catálogo se
+// comporten igual.
+export const PRODUCTOS = CATALOGO_CRUDO
 
 // Lo que se deriva del catálogo (colores, talles, rango de precio, qué opciones
 // de filtro tienen prendas) se calcula en CatalogoContext, porque ahí es donde

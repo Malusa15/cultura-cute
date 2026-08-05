@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { guardarProducto, subirFoto, traerCategorias } from '../lib/catalogo.js'
 import { avisarCatalogoActualizado } from '../context/CatalogoContext.jsx'
+import { fotoUrl } from '../lib/rutas.js'
 import { ESTILOS, GENEROS, MATERIALES, ORDEN_TALLES } from '../data/taxonomia.js'
 
 // Las medidas son campos libres, pero estas son las que se repiten en casi todas
@@ -374,7 +375,9 @@ export default function FormularioProducto({ producto, alCerrar }) {
         <div className="admin-fotos">
           {datos.imagenes.map((url, indice) => (
             <div className="admin-foto" key={url}>
-              <img src={url} alt="" />
+              {/* Se pinta resuelta pero en `datos.imagenes` sigue cruda, que es
+                  lo que se vuelve a guardar. */}
+              <img src={fotoUrl(url)} alt="" />
               <div className="admin-foto__acciones">
                 <button type="button" className="admin__link" onClick={() => moverFoto(indice, -1)}>
                   ←

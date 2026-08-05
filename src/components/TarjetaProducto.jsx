@@ -1,11 +1,12 @@
 import { precio } from '../lib/formato.js'
+import { fotoUrl } from '../lib/rutas.js'
 import { stockTotal } from '../lib/stock.js'
 
 const UMBRAL_ULTIMAS = 3
 
 export default function TarjetaProducto({ producto, alAbrir }) {
   const stock = stockTotal(producto)
-  const [principal, segunda] = producto.imagenes
+  const [principal, segunda] = producto.imagenes.map(fotoUrl)
 
   return (
     <button type="button" className="producto" onClick={() => alAbrir(producto)}>

@@ -1,13 +1,4 @@
 import { supabase } from './supabase.js'
-import { asset } from './rutas.js'
-
-// Las fotos viejas están en el repo como "/img/productos/x.png"; las que se
-// suben desde el panel quedan en Supabase Storage con una URL completa. Esto
-// deja pasar las segundas y le agrega el prefijo del deploy a las primeras.
-function resolverImagen(ruta) {
-  if (!ruta) return null
-  return /^https?:\/\//.test(ruta) ? ruta : asset(ruta)
-}
 
 const ORDEN_TALLES = ['XS', 'S', 'M', 'L', 'XL', 'Único']
 
@@ -32,7 +23,10 @@ export function aProducto(fila) {
     composicion: fila.composicion ?? '',
     color: fila.color ?? null,
     estilo: fila.estilo ?? [],
-    imagenes: (fila.imagenes ?? []).map(resolverImagen).filter(Boolean),
+    // Tal como están guardadas: el prefijo del deploy lo pone `fotoUrl` al
+    // pintar. Si se resolvieran acá, el formulario del panel las leería ya
+    // prefijadas y las volvería a guardar así, rompiendo la ruta.
+    imagenes: (fila.imagenes ?? []).filter(Boolean),
     activo: fila.activo,
     talles: [...(fila.talles ?? [])]
       .sort((a, b) => {
