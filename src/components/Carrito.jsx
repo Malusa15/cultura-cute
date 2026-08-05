@@ -1,13 +1,47 @@
+import { useState } from 'react'
 import { useCarrito } from '../context/CarritoContext.jsx'
 import { precio } from '../lib/formato.js'
+import { fotoUrl } from '../lib/rutas.js'
 import { linkWhatsApp, mensajePedido } from '../lib/whatsapp.js'
+import { registrarPedido } from '../lib/ventas.js'
+import { supabaseConfigurado } from '../lib/supabase.js'
 import { usePanel } from '../hooks/usePanel.js'
 import { IconoCerrar, IconoWhatsApp } from './Iconos.jsx'
 
 export default function Carrito() {
   const { items, total, abierto, cerrar, cambiarCantidad, quitar } = useCarrito()
+  const [enviando, setEnviando] = useState(false)
 
   usePanel(abierto, cerrar)
+
+  // Al finalizar, el pedido queda guardado en la base (entra al panel como venta
+  // pendiente) y recién después se abre WhatsApp con el mensaje.
+  //
+  // Si la base falla, igual se abre el chat: perder el registro es molesto, pero
+  // perder la venta es peor.
+  const finalizar = async () => {
+    if (enviando || items.length === 0) return
+    setEnviando(true)
+
+    // La pestaña se abre ANTES del await a propósito: si se abriera después, el
+    // navegador la trataría como popup y la bloquearía.
+    const pestana = window.open('', '_blank')
+
+    let numero = null
+    if (supabaseConfigurado) {
+      try {
+        numero = (await registrarPedido({ items }))?.numero ?? null
+      } catch (e) {
+        console.error('No se pudo registrar el pedido:', e?.message ?? String(e))
+      }
+    }
+
+    const url = linkWhatsApp(mensajePedido(items, total, numero))
+    if (pestana) pestana.location = url
+    else window.location.href = url
+
+    setEnviando(false)
+  }
 
   if (!abierto) return null
 
@@ -38,7 +72,7 @@ export default function Carrito() {
                 <li className="linea" key={`${item.productoId}-${item.talle}`}>
                   <img
                     className="linea__foto"
-                    src={item.producto.imagenes[0]}
+                    src={fotoUrl(item.producto.imagenes[0])}
                     alt={item.producto.nombre}
                   />
 
@@ -100,15 +134,15 @@ export default function Carrito() {
                 <span>{precio(total)}</span>
               </div>
 
-              <a
+              <button
+                type="button"
                 className="boton boton--wsp boton--ancho"
-                href={linkWhatsApp(mensajePedido(items, total))}
-                target="_blank"
-                rel="noreferrer"
+                onClick={finalizar}
+                disabled={enviando}
               >
                 <IconoWhatsApp width={18} height={18} />
-                Finalizar compra
-              </a>
+                {enviando ? 'Preparando el pedido…' : 'Finalizar compra'}
+              </button>
 
               <p className="carrito__nota">
                 La compra se cierra por WhatsApp: te abrimos el chat con el pedido ya escrito y

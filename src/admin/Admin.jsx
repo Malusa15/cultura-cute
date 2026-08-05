@@ -6,10 +6,20 @@ import Login from './Login.jsx'
 import ListaProductos from './ListaProductos.jsx'
 import FormularioProducto from './FormularioProducto.jsx'
 import Categorias from './Categorias.jsx'
+import Ventas from './Ventas.jsx'
+import Encargos from './Encargos.jsx'
+import Reservas from './Reservas.jsx'
+import Envios from './Envios.jsx'
 
+// El orden sigue el recorrido de una prenda: primero el catálogo, después lo que
+// pasa cuando alguien la compra.
 const SOLAPAS = [
   { id: 'prendas', label: 'Prendas' },
   { id: 'categorias', label: 'Categorías' },
+  { id: 'ventas', label: 'Ventas' },
+  { id: 'encargos', label: 'Encargos' },
+  { id: 'reservas', label: 'Reservas' },
+  { id: 'envios', label: 'Envíos' },
 ]
 
 // Aviso para cuando el panel se abre sin credenciales cargadas. Sin esto, el
@@ -105,6 +115,10 @@ export default function Admin() {
           ))}
 
         {solapa === 'categorias' && <Categorias />}
+        {solapa === 'ventas' && <Ventas />}
+        {solapa === 'encargos' && <Encargos />}
+        {solapa === 'reservas' && <Reservas />}
+        {solapa === 'envios' && <Envios />}
       </main>
     </div>
   )

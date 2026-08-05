@@ -44,6 +44,7 @@
 
 .admin__solapas {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
@@ -444,6 +445,101 @@
   border: 1px solid var(--borde);
   border-radius: 999px;
   font-size: 0.82rem;
+}
+
+/* --- Ventas, encargos, reservas y envíos ---------------------------------- */
+
+/* Select de estado dentro de las tablas: se ve como una etiqueta hasta que se
+   toca, para no llenar la fila de cajas grises. */
+.admin-estado__select {
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Verde lo que está en curso, rojo lo que necesita atención, apagado lo cerrado.
+   Los estados de las cuatro tablas comparten esta paleta. */
+.admin-estado__select[data-estado='pendiente'],
+.admin-estado__select[data-estado='pedido'],
+.admin-estado__select[data-estado='activa'] {
+  color: #b26a00;
+}
+
+.admin-estado__select[data-estado='confirmada'],
+.admin-estado__select[data-estado='en_proceso'],
+.admin-estado__select[data-estado='despachado'],
+.admin-estado__select[data-estado='listo'] {
+  color: #128c7e;
+}
+
+.admin-estado__select[data-estado='entregada'],
+.admin-estado__select[data-estado='entregado'],
+.admin-estado__select[data-estado='concretada'] {
+  color: rgba(10, 10, 10, 0.55);
+}
+
+.admin-estado__select[data-estado='cancelada'],
+.admin-estado__select[data-estado='cancelado'],
+.admin-estado__select[data-estado='vencida'] {
+  color: var(--rojo);
+}
+
+.admin-estado[data-estado='pendiente'] {
+  color: #b26a00;
+}
+
+.admin-estado[data-estado='despachado'] {
+  color: #128c7e;
+}
+
+.admin-estado[data-estado='entregado'] {
+  color: rgba(10, 10, 10, 0.55);
+}
+
+/* Detalle de prendas que se despliega debajo de una venta. */
+.admin-tabla__detalle td {
+  background: var(--crema-sombra);
+  padding-block: 14px;
+}
+
+.admin-detalle__lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 0.86rem;
+}
+
+.admin-detalle__lista li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-filtro-estado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-filtro-estado .admin-campo__control {
+  width: auto;
+}
+
+.admin-ayuda--alerta {
+  color: var(--rojo);
+  opacity: 1;
+  font-weight: 600;
+  margin-bottom: 0;
 }
 
 /* --- Responsive ----------------------------------------------------------- */
