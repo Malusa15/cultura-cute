@@ -11,6 +11,10 @@ import { IconoWhatsApp } from './Iconos.jsx'
 const VACIO = {
   prenda: '',
   prendaOtra: '',
+  // Personalización Cutie: la clienta elige la prenda y nos deja el resto a
+  // nosotras. Apaga los pasos 2 y 3 en vez de borrarlos, así si se arrepiente y
+  // la destilda vuelve a encontrar lo que había marcado.
+  cutie: false,
   alcance: '',
   detalles: [],
   detalleOtro: '',
@@ -49,7 +53,8 @@ export default function Personalizacion() {
       setError('Contanos qué prenda querés personalizar.')
       return
     }
-    if (!form.alcance) {
+    // Con la Cutie el alcance lo elegimos nosotras, así que no se pide.
+    if (!form.cutie && !form.alcance) {
       setError('Elegí hasta dónde querés que intervengamos la prenda.')
       return
     }
@@ -62,8 +67,9 @@ export default function Personalizacion() {
 
     const mensaje = mensajePersonalizacion({
       prenda: prendaFinal,
-      alcance: form.alcance,
-      detalles: detallesFinales,
+      cutie: form.cutie,
+      alcance: form.cutie ? '' : form.alcance,
+      detalles: form.cutie ? [] : detallesFinales,
       nombre: form.nombre.trim(),
       contacto: form.contacto.trim(),
       talle: form.talle.trim(),
@@ -121,8 +127,27 @@ export default function Personalizacion() {
             )}
           </fieldset>
 
+          {/* --- Carta blanca --- */}
+          <label className="personalizar__cutie" data-elegido={form.cutie}>
+            <input
+              type="checkbox"
+              checked={form.cutie}
+              onChange={(e) => setForm((f) => ({ ...f, cutie: e.target.checked }))}
+            />
+            <span>
+              <strong className="gotica">Personalización Cutie</strong>
+              <span className="personalizar__cutie-texto">
+                Elegí la prenda y dejanos el resto a nosotras: la intervenimos a nuestro
+                criterio, con la impronta de la marca. Si la marcás, no hace falta que
+                completes los pasos 2 y 3.
+              </span>
+            </span>
+          </label>
+
           {/* --- 2. Hasta dónde --- */}
-          <fieldset className="personalizar__paso">
+          {/* Con la Cutie los pasos 2 y 3 se apagan enteros: `disabled` en el
+              fieldset alcanza para que no se puedan tocar ni tabular. */}
+          <fieldset className="personalizar__paso" disabled={form.cutie} data-apagado={form.cutie}>
             <legend className="personalizar__titulo">2 · ¿Qué querés personalizar?</legend>
 
             <div className="personalizar__alcances">
@@ -149,7 +174,7 @@ export default function Personalizacion() {
           </fieldset>
 
           {/* --- 3. Apliques --- */}
-          <fieldset className="personalizar__paso">
+          <fieldset className="personalizar__paso" disabled={form.cutie} data-apagado={form.cutie}>
             <legend className="personalizar__titulo">3 · ¿Qué le querés sumar?</legend>
             <p className="personalizar__ayuda">
               Elegí todas las que quieras, o ninguna si todavía no lo tenés decidido.

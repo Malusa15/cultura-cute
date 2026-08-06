@@ -135,6 +135,12 @@ qué prenda es, hasta dónde intervenirla (talle y estilo / solo el estilo / dis
 completo), qué apliques sumarle y los datos de la clienta. Recién al final se abre el
 chat, ya con todo escrito.
 
+La casilla **Personalización Cutie** apaga los pasos 2 y 3: la clienta elige la prenda y
+la marca decide cómo intervenirla. Los pasos se deshabilitan (`disabled` en el fieldset)
+en vez de esconderse, así se ve qué se está delegando, y lo que hubiera marcado sigue
+ahí si se arrepiente y destilda. Los datos de contacto nunca se apagan: sin nombre no se
+puede contestar.
+
 No guarda nada en la base: arma el mensaje y listo. La idea es que la consulta llegue
 completa para poder cargarla derecho en la solapa Presupuestos del panel, sin el ida y
 vuelta de preguntar siempre lo mismo.

@@ -673,6 +673,72 @@ ul {
   gap: 10px;
 }
 
+/* Carta blanca a la marca. Va en rojo lleno porque no es un campo más del
+   formulario: es la decisión de saltearse la mitad. */
+.personalizar__cutie {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 22px;
+  border: 2px solid var(--rojo);
+  border-radius: var(--radio);
+  cursor: pointer;
+  transition:
+    background var(--transicion),
+    color var(--transicion);
+}
+
+.personalizar__cutie input {
+  margin-top: 4px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--rojo);
+}
+
+.personalizar__cutie[data-elegido='true'] {
+  background: var(--rojo);
+  color: var(--crema);
+}
+
+.personalizar__cutie[data-elegido='true'] input {
+  accent-color: var(--crema);
+}
+
+.personalizar__cutie strong {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--rojo);
+}
+
+.personalizar__cutie[data-elegido='true'] strong {
+  color: var(--crema);
+}
+
+.personalizar__cutie-texto {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+/* Los pasos que apaga la Cutie: se ven pero no se tocan, para que quede claro
+   qué es lo que se está delegando. */
+.personalizar__paso[data-apagado='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.personalizar__paso[data-apagado='true'] .chip,
+.personalizar__paso[data-apagado='true'] .personalizar__alcance {
+  cursor: not-allowed;
+}
+
+.personalizar__paso[data-apagado='true'] .personalizar__alcance:hover {
+  border-color: var(--borde);
+}
+
 /* Las tres opciones de alcance necesitan su explicación al lado: si dicen solo
    "Talle y estilo" nadie sabe qué está eligiendo. */
 .personalizar__alcances {

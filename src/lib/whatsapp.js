@@ -38,10 +38,17 @@ export function mensajePersonalizacion(datos) {
     '¡Hola Cultura.Cute! Quiero personalizar una prenda:',
     '',
     `Prenda: ${datos.prenda}`,
-    `Qué quiero personalizar: ${datos.alcance}`,
   ]
 
-  if (datos.detalles.length) lineas.push(`Apliques y detalles: ${datos.detalles.join(', ')}`)
+  // Con la Cutie no viajan ni el alcance ni los apliques: el sentido es
+  // justamente que los elija la marca.
+  if (datos.cutie) {
+    lineas.push('PERSONALIZACIÓN CUTIE: la intervienen ustedes a su criterio.')
+  } else {
+    lineas.push(`Qué quiero personalizar: ${datos.alcance}`)
+    if (datos.detalles.length) lineas.push(`Apliques y detalles: ${datos.detalles.join(', ')}`)
+  }
+
   if (datos.talle) lineas.push(`Talle habitual: ${datos.talle}`)
 
   lineas.push('', `Soy ${datos.nombre}`)
