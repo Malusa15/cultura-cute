@@ -127,6 +127,34 @@ El número `2235402402` se guarda como `5492235402402` en `src/data/marca.js`
 (54 Argentina + 9 celular + 223 Mar del Plata sin el 0 + número sin el 15).
 Cambiarlo ahí lo actualiza en todo el sitio.
 
+## Presupuestos
+
+La solapa **Presupuestos** del panel cotiza una prenda antes de que exista el encargo:
+se cargan los materiales (telas, apliques, tintura, avíos), las horas de trabajo por lo
+que vale la hora, un margen y un descuento opcional, y el total se calcula solo mientras
+se escribe. También guarda las medidas del cuerpo de la clienta (torso, brazos, piernas
+y largos de la prenda, todo en cm).
+
+El botón **Guardar y descargar PDF** baja un A4 con la identidad de la marca —fondo
+crema, wordmark, la caja roja del total— listo para mandar por WhatsApp. Se arma en el
+navegador con [jsPDF](https://github.com/parallax/jsPDF), que se carga con `import()`
+dinámico para que la tienda pública no lo descargue.
+
+Un presupuesto no mueve stock ni plata: si la clienta lo acepta, se carga como encargo
+en la solapa de al lado.
+
+| Archivo | Qué hace |
+|---|---|
+| `supabase/presupuestos.sql` | Tablas `presupuestos` y `presupuesto_materiales` + RLS |
+| `src/lib/presupuestos.js` | Listas de medidas y materiales, la cuenta del total, acceso a la base |
+| `src/lib/presupuestoPdf.js` | Armado del PDF |
+| `src/admin/Presupuestos.jsx` | La solapa del panel |
+
+Las medidas se guardan en una columna `jsonb` y no en veinte columnas: son muchas, casi
+siempre se llenan a medias y la lista cambia según la prenda. Las claves las define
+`MEDIDAS` en `src/lib/presupuestos.js`; agregar una medida nueva es agregarla ahí y no
+tocar SQL. Cambiarle la clave a una que ya se usó, en cambio, deja huérfano lo cargado.
+
 ## Pendiente
 
 **Datos reales** (los actuales son de ejemplo, con fotos reales del portfolio):
@@ -157,7 +185,9 @@ Falta:
 ### Cómo retomar
 
 1. Crear el proyecto en [supabase.com](https://supabase.com) (plan gratis).
-2. En el SQL Editor, correr `supabase/schema.sql` y después `supabase/seed.sql`.
+2. En el SQL Editor, correr en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
+   `supabase/ventas.sql` y `supabase/presupuestos.sql`. Los cuatro son idempotentes:
+   si se corren dos veces no rompen nada.
 3. En **Authentication > Providers**, desactivar el registro público y dar de alta
    a mano las cuentas que van a entrar al panel.
 4. Copiar `.env.example` a `.env.local` y completar la URL y la anon key.

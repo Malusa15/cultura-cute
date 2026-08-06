@@ -7,16 +7,19 @@ import ListaProductos from './ListaProductos.jsx'
 import FormularioProducto from './FormularioProducto.jsx'
 import Categorias from './Categorias.jsx'
 import Ventas from './Ventas.jsx'
+import Presupuestos from './Presupuestos.jsx'
 import Encargos from './Encargos.jsx'
 import Reservas from './Reservas.jsx'
 import Envios from './Envios.jsx'
 
 // El orden sigue el recorrido de una prenda: primero el catálogo, después lo que
-// pasa cuando alguien la compra.
+// pasa cuando alguien la compra. Presupuestos va antes de Encargos porque es el
+// paso previo: primero se cotiza, y si la clienta acepta se vuelve encargo.
 const SOLAPAS = [
   { id: 'prendas', label: 'Prendas' },
   { id: 'categorias', label: 'Categorías' },
   { id: 'ventas', label: 'Ventas' },
+  { id: 'presupuestos', label: 'Presupuestos' },
   { id: 'encargos', label: 'Encargos' },
   { id: 'reservas', label: 'Reservas' },
   { id: 'envios', label: 'Envíos' },
@@ -116,6 +119,7 @@ export default function Admin() {
 
         {solapa === 'categorias' && <Categorias />}
         {solapa === 'ventas' && <Ventas />}
+        {solapa === 'presupuestos' && <Presupuestos />}
         {solapa === 'encargos' && <Encargos />}
         {solapa === 'reservas' && <Reservas />}
         {solapa === 'envios' && <Envios />}

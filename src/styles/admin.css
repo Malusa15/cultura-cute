@@ -366,6 +366,7 @@
 
 .admin-form__botones {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -577,6 +578,123 @@
   opacity: 1;
   font-weight: 600;
   margin-bottom: 0;
+}
+
+/* --- Presupuestos --------------------------------------------------------- */
+
+.admin-estado__select[data-estado='borrador'] {
+  color: rgba(10, 10, 10, 0.55);
+}
+
+.admin-estado__select[data-estado='enviado'] {
+  color: #b26a00;
+}
+
+.admin-estado__select[data-estado='aceptado'] {
+  color: #128c7e;
+}
+
+.admin-estado__select[data-estado='rechazado'],
+.admin-estado__select[data-estado='vencido'] {
+  color: var(--rojo);
+}
+
+/* Los bloques del formulario de presupuesto (medidas, materiales, cuenta) son
+   anchos: sus hijos ocupan todo en vez de encogerse al contenido. */
+.admin-bloque > .admin-tabla__scroll,
+.admin-bloque > .admin-form__grilla,
+.admin-bloque > .admin-medidas,
+.admin-bloque > .admin-cuenta {
+  width: 100%;
+}
+
+.admin-bloque__titulo {
+  font-family: var(--gotica);
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--rojo);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.admin-bloque .admin-ayuda {
+  margin-bottom: 0;
+}
+
+/* Las medidas son muchas y cortas: entran de a varias por fila en cajas chicas
+   para que la ficha completa se vea de un vistazo. */
+.admin-medidas__grupo {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.admin-medidas__grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* La tabla de materiales tiene controles adentro, así que necesita más aire y
+   columnas que no se aplasten. */
+.admin-tabla--materiales td {
+  vertical-align: top;
+  padding: 8px 6px;
+}
+
+.admin-tabla--materiales .admin-campo__control {
+  min-width: 110px;
+  padding: 7px 9px;
+  font-size: 0.85rem;
+}
+
+.admin-tabla__numero {
+  white-space: nowrap;
+  font-weight: 600;
+  text-align: right;
+  padding-top: 15px;
+}
+
+/* Resumen de la cuenta, en vivo mientras se carga el presupuesto. */
+.admin-cuenta {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.admin-cuenta li {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.admin-cuenta__total {
+  padding: 10px 12px;
+  margin-top: 6px;
+  border: none;
+  border-radius: var(--radio);
+  background: var(--rojo);
+  color: var(--crema);
+  font-family: var(--gotica);
+  font-size: 1.5rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.admin-cuenta__sena {
+  border-bottom: none;
+  font-size: 0.82rem;
+  opacity: 0.75;
 }
 
 /* --- Responsive ----------------------------------------------------------- */
