@@ -1,5 +1,5 @@
 import { MARCA } from '../data/marca.js'
-import { precio } from './formato.js'
+import { aFecha, precio } from './formato.js'
 import { asset } from './rutas.js'
 import {
   MEDIDAS,
@@ -54,7 +54,9 @@ function cargarLogo() {
 const dia = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })
 
 function fechaLarga(valor) {
-  const d = valor ? new Date(valor) : new Date()
+  // aFecha() es la que evita que una entrega del 20 salga impresa como 19: ver
+  // el comentario en formato.js.
+  const d = valor ? aFecha(valor) : new Date()
   return Number.isNaN(d.getTime()) ? dia.format(new Date()) : dia.format(d)
 }
 

@@ -1,5 +1,5 @@
 import { MARCA } from '../data/marca.js'
-import { precio } from './formato.js'
+import { fechaCorta, precio } from './formato.js'
 
 // wa.me abre WhatsApp Web en desktop y la app en el celular, con el texto ya cargado.
 export function linkWhatsApp(mensaje = '') {
@@ -46,7 +46,8 @@ export function mensajePedidoAMedida(datos, numero = null) {
   if (datos.referencia) lineas.push(`Referencia: ${datos.referencia}`)
   if (datos.cambios.length) lineas.push(`Le cambiaría: ${datos.cambios.join(', ')}`)
   if (datos.talle) lineas.push(`Talle habitual: ${datos.talle}`)
-  if (datos.fechaEntrega) lineas.push(`La necesito para: ${datos.fechaEntrega}`)
+  // Sin formatear salía la fecha cruda de la base ("2026-12-20").
+  if (datos.fechaEntrega) lineas.push(`La necesito para: ${fechaCorta(datos.fechaEntrega)}`)
 
   lineas.push('', `Soy ${datos.nombre}`)
   if (datos.contacto) lineas.push(`Contacto: ${datos.contacto}`)
