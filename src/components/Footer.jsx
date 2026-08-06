@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { MARCA } from '../data/marca.js'
 import { asset } from '../lib/rutas.js'
 import { linkWhatsApp } from '../lib/whatsapp.js'
@@ -36,8 +37,18 @@ export default function Footer() {
         </div>
 
         <p className="footer__copy">
-          © {new Date().getFullYear()} {MARCA.nombre} · {MARCA.ciudad} · Prendas artesanales y
-          limitadas.
+          <span>
+            © {new Date().getFullYear()} {MARCA.nombre} · {MARCA.ciudad} · Prendas artesanales y
+            limitadas.
+          </span>
+
+          {/* Entrada al panel. Va acá abajo y apagada a propósito: la encuentra
+              quien la busca y no le llama la atención a quien vino a ver prendas.
+              No es un secreto —/admin pide usuario y contraseña igual—, es no
+              ensuciar la tienda con un botón que no es para la clienta. */}
+          <Link className="footer__panel" to="/admin">
+            Panel
+          </Link>
         </p>
       </div>
     </footer>
