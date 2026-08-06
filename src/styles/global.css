@@ -648,10 +648,9 @@ ul {
   margin-bottom: 36px;
 }
 
-/* Botón que despliega el formulario. Los dos formularios arrancan cerrados y
-   solo puede haber uno abierto, así que este botón es la puerta de entrada. */
-.personalizar__abrir {
-  align-self: flex-start;
+/* Los formularios arrancan cerrados y se abren desde Servicios; este botón es
+   para volver a cerrarlos, así que va discreto y arriba del formulario. */
+.personalizar__cerrar {
   margin-bottom: 24px;
 }
 

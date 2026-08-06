@@ -34,7 +34,7 @@ function hoy() {
 
 // `abierto` y `alternar` los maneja Sitio.jsx: el formulario arranca cerrado y
 // abrirlo cierra el de personalización. Lo que ya se completó no se pierde al
-// cerrarlo (la sección sigue montada, lo único que se esconde es el formulario).
+// cerrarlo: el componente sigue montado, lo que cambia es lo que dibuja.
 export default function PedidoAMedida({ abierto, alternar }) {
   const [form, setForm] = useState(VACIO)
   const [error, setError] = useState(null)
@@ -143,6 +143,11 @@ export default function PedidoAMedida({ abierto, alternar }) {
     setEnviando(false)
   }
 
+  // Cerrado no queda nada a la vista: quien lo abre es el botón «Pedir mi
+  // prenda» de Servicios, y tener acá otro botón para lo mismo era repetirlo.
+  // La sección vacía se queda igual porque es el ancla a la que baja ese botón.
+  if (!abierto) return <section id="a-medida" />
+
   return (
     <section className="seccion" id="a-medida" aria-labelledby="titulo-a-medida">
       <div className="contenedor">
@@ -155,17 +160,10 @@ export default function PedidoAMedida({ abierto, alternar }) {
           y nosotras te pasamos el presupuesto.
         </p>
 
-        <button
-          type="button"
-          className={`boton personalizar__abrir ${abierto ? 'boton--fantasma' : ''}`}
-          aria-expanded={abierto}
-          aria-controls="formulario-a-medida"
-          onClick={alternar}
-        >
-          {abierto ? 'Cerrar' : 'Completar el pedido'}
+        <button type="button" className="boton boton--fantasma personalizar__cerrar" onClick={alternar}>
+          Cerrar
         </button>
 
-        {abierto && (
         <form className="personalizar" id="formulario-a-medida" onSubmit={enviar}>
           {/* --- 1. Qué tipo de pedido --- */}
           <fieldset className="personalizar__paso">
@@ -333,7 +331,6 @@ export default function PedidoAMedida({ abierto, alternar }) {
             {enviando ? 'Enviando…' : 'Enviar por WhatsApp'}
           </button>
         </form>
-        )}
       </div>
     </section>
   )

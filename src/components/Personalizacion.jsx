@@ -30,7 +30,7 @@ const VACIO = {
 
 // `abierto` y `alternar` los maneja Sitio.jsx: el formulario arranca cerrado y
 // abrirlo cierra el de prendas a pedido. Lo que ya se completó no se pierde al
-// cerrarlo (la sección sigue montada, lo único que se esconde es el formulario).
+// cerrarlo: el componente sigue montado, lo que cambia es lo que dibuja.
 export default function Personalizacion({ abierto, alternar }) {
   const [form, setForm] = useState(VACIO)
   const [error, setError] = useState(null)
@@ -143,6 +143,11 @@ export default function Personalizacion({ abierto, alternar }) {
     setEnviando(false)
   }
 
+  // Cerrado no queda nada a la vista: quien lo abre es el botón «Armar mi
+  // personalización» de Servicios. La sección vacía se queda igual porque es el
+  // ancla a la que baja ese botón.
+  if (!abierto) return <section id="personalizacion" />
+
   return (
     <section className="seccion" id="personalizacion" aria-labelledby="titulo-personalizacion">
       <div className="contenedor">
@@ -158,17 +163,10 @@ export default function Personalizacion({ abierto, alternar }) {
           presupuesto.
         </p>
 
-        <button
-          type="button"
-          className={`boton personalizar__abrir ${abierto ? 'boton--fantasma' : ''}`}
-          aria-expanded={abierto}
-          aria-controls="formulario-personalizacion"
-          onClick={alternar}
-        >
-          {abierto ? 'Cerrar' : 'Personalizar una prenda'}
+        <button type="button" className="boton boton--fantasma personalizar__cerrar" onClick={alternar}>
+          Cerrar
         </button>
 
-        {abierto && (
         <form className="personalizar" id="formulario-personalizacion" onSubmit={enviar}>
           {/* --- 1. Qué prenda --- */}
           <fieldset className="personalizar__paso">
@@ -342,7 +340,6 @@ export default function Personalizacion({ abierto, alternar }) {
             {enviando ? 'Enviando…' : 'Enviar por WhatsApp'}
           </button>
         </form>
-        )}
       </div>
     </section>
   )
