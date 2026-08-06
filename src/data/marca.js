@@ -123,9 +123,11 @@ export const PERSONALIZACION = {
       texto: 'El talle está bien, quiero cambiarle el aspecto.',
     },
     {
-      id: 'diseno-completo',
-      titulo: 'Diseño completo',
-      texto: 'Rehacerla de cero, con otro molde y otra idea.',
+      id: 'inspo-cutie',
+      titulo: 'Diseño InspoCutie',
+      texto:
+        'Traigo una prenda mía y me la personalizan parecida a un modelo que ya tienen en la ' +
+        'tienda.',
     },
   ],
 
