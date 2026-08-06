@@ -134,6 +134,22 @@ ul {
   text-transform: uppercase;
 }
 
+/* El nombre de la marca lleva las dos góticas mezcladas: las iniciales en
+   UnifrakturCook y el resto en MedievalSharp. El `text-transform: none` es
+   imprescindible —.gotica pasa todo a mayúsculas y sin esto no habría minúsculas
+   que mostrar—, y el peso 400 también: MedievalSharp solo trae regular, así que
+   pedirle 700 la engrosaría de mentira y le ensuciaría el trazo. */
+.marca {
+  font-family: var(--gotica);
+  font-weight: 400;
+  text-transform: none;
+}
+
+.marca__inicial {
+  font-family: var(--gotica-display);
+  font-weight: 700;
+}
+
 /* La sombra dura y desplazada es la firma visual del portfolio. */
 .gotica--sobre-crema {
   color: var(--rojo);

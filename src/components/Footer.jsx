@@ -3,6 +3,7 @@ import { MARCA } from '../data/marca.js'
 import { asset } from '../lib/rutas.js'
 import { linkWhatsApp } from '../lib/whatsapp.js'
 import { IconoInstagram, IconoWhatsApp } from './Iconos.jsx'
+import NombreMarca from './NombreMarca.jsx'
 
 export default function Footer() {
   return (
@@ -11,7 +12,9 @@ export default function Footer() {
         <div className="footer__marca">
           <img src={asset('/img/marca/monograma-cc.png')} alt="" aria-hidden />
           <div>
-            <p className="gotica footer__nombre">{MARCA.nombre}</p>
+            <p className="gotica footer__nombre">
+              <NombreMarca />
+            </p>
             <p className="bajada">{MARCA.tagline}</p>
           </div>
         </div>

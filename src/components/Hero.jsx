@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { MARCA } from '../data/marca.js'
 import { asset } from '../lib/rutas.js'
+import NombreMarca from './NombreMarca.jsx'
 
 const FOTOS = [
   { src: asset('/img/editorial/editorial-1.jpg'), alt: 'Dos modelos con prendas Cultura.Cute en una escalera' },
@@ -64,7 +65,9 @@ export default function Hero() {
       </div>
 
       <div className="hero__contenido contenedor">
-        <h1 className="hero__titulo gotica gotica--sobre-rojo">Cultura.Cute</h1>
+        <h1 className="hero__titulo gotica gotica--sobre-rojo">
+          <NombreMarca />
+        </h1>
         <p className="hero__bajada bajada">{MARCA.tagline}</p>
         <a className="boton boton--sobre-rojo" href="#tienda">
           Ver tienda
