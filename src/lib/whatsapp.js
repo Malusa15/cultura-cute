@@ -30,6 +30,31 @@ export function mensajeConsulta(texto) {
   return texto
 }
 
+// Mensaje del formulario de prendas a pedido. `numero` es el del presupuesto
+// que quedó en borrador en el panel: es lo que permite encontrar el chat en la
+// solapa Presupuestos. Si la base falló llega en null y el mensaje sale igual.
+export function mensajePedidoAMedida(datos, numero = null) {
+  const lineas = [
+    numero
+      ? `¡Hola Cultura.Cute! Quiero pedir una prenda a medida (presupuesto #${numero}):`
+      : '¡Hola Cultura.Cute! Quiero pedir una prenda a medida:',
+    '',
+    `Prenda: ${datos.prenda}`,
+    datos.tipo,
+  ]
+
+  if (datos.referencia) lineas.push(`Referencia: ${datos.referencia}`)
+  if (datos.cambios.length) lineas.push(`Le cambiaría: ${datos.cambios.join(', ')}`)
+  if (datos.talle) lineas.push(`Talle habitual: ${datos.talle}`)
+  if (datos.fechaEntrega) lineas.push(`La necesito para: ${datos.fechaEntrega}`)
+
+  lineas.push('', `Soy ${datos.nombre}`)
+  if (datos.contacto) lineas.push(`Contacto: ${datos.contacto}`)
+  if (datos.comentario) lineas.push('', datos.comentario)
+
+  return lineas.join('\n')
+}
+
 // Mensaje del formulario de personalización de la home. La idea es que llegue
 // con todo lo necesario para presupuestar sin tener que preguntar de vuelta,
 // así se puede cargar derecho en la solapa Presupuestos del panel.

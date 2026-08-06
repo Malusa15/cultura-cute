@@ -127,6 +127,32 @@ El número `2235402402` se guarda como `5492235402402` en `src/data/marca.js`
 (54 Argentina + 9 celular + 223 Mar del Plata sin el 0 + número sin el 15).
 Cambiarlo ahí lo actualiza en todo el sitio.
 
+## Formulario de prendas a pedido
+
+La tarjeta **Prendas a pedido** baja a `#a-medida` (`src/components/PedidoAMedida.jsx`).
+Se elige qué tipo de pedido es —una pieza exclusiva de la marca, un diseño que vio y
+quiere reversionado, o uno nuestro con cambios de talle/color/tela/detalles—, qué prenda
+y los datos de la clienta.
+
+A diferencia del de personalización, **este sí escribe en la base**: deja un presupuesto
+en `borrador` con `origen = 'web'`, así aparece en la solapa Presupuestos listo para
+ponerle precio en vez de cargarlo a mano. El mensaje de WhatsApp lleva el número
+(«presupuesto #12») para encontrarlo.
+
+La tienda no tiene sesión, así que entra como `anon`. En vez de darle INSERT sobre
+`presupuestos` —que le dejaría inventar totales o marcar presupuestos como aceptados— se
+le da acceso a una sola función `security definer`, igual que `registrar_pedido` del
+carrito. Todo lo que es plata se fuerza en cero adentro de la función: del navegador solo
+se acepta texto, y con topes de largo. Está en `supabase/pedidos-a-medida.sql`.
+
+Si la base falla o el SQL todavía no se corrió, el formulario abre WhatsApp igual con el
+mensaje completo, solo que sin número: perder el registro es molesto, perder el pedido es
+peor. Por lo mismo, `traerPresupuestos` pide las columnas con `*` y no por nombre — si
+pidiera `origen` explícitamente, la solapa entera se caería hasta correr ese SQL.
+
+Las medidas del cuerpo no se piden acá: son veinte campos y espantan a cualquiera en un
+formulario público. Se toman después por chat o en persona y se cargan en el panel.
+
 ## Formulario de personalización
 
 La tarjeta **Personalización** de Servicios no abre WhatsApp: baja a la sección
@@ -209,8 +235,8 @@ Falta:
 
 1. Crear el proyecto en [supabase.com](https://supabase.com) (plan gratis).
 2. En el SQL Editor, correr en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
-   `supabase/ventas.sql` y `supabase/presupuestos.sql`. Los cuatro son idempotentes:
-   si se corren dos veces no rompen nada.
+   `supabase/ventas.sql`, `supabase/presupuestos.sql` y `supabase/pedidos-a-medida.sql`.
+   Los cinco son idempotentes: si se corren dos veces no rompen nada.
 3. En **Authentication > Providers**, desactivar el registro público y dar de alta
    a mano las cuentas que van a entrar al panel.
 4. Copiar `.env.example` a `.env.local` y completar la URL y la anon key.

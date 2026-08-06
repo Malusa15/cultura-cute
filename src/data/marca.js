@@ -58,6 +58,9 @@ export const SERVICIOS = [
       'Diseñamos y confeccionamos la prenda que tenés en la cabeza: tomamos las medidas, ' +
       'hacemos los bocetos y seleccionamos las telas. Creando tu pieza única.',
     consulta: 'Hola! Quiero consultar por una prenda a medida',
+    // Este baja al formulario que además deja el presupuesto armado en el panel.
+    ancla: 'a-medida',
+    accion: 'Pedir mi prenda',
   },
   {
     id: 'piezas-unicas',
@@ -139,4 +142,31 @@ export const PERSONALIZACION = {
     'Flecos',
     'Otro',
   ],
+}
+
+// Opciones del formulario de prendas a pedido. A diferencia del de
+// personalización, este además deja el presupuesto cargado en el panel, así que
+// los `id` viajan a la base adentro de la descripción: cambiar un `titulo` no
+// rompe nada, pero deja los pedidos viejos escritos con el texto anterior.
+export const A_MEDIDA = {
+  tipos: [
+    {
+      id: 'exclusivo',
+      titulo: 'Un diseño exclusivo de Cultura.Cute',
+      texto: 'Confío en ustedes: quiero una pieza suya, pensada y hecha para mí.',
+    },
+    {
+      id: 'reversion',
+      titulo: 'Un diseño que vi, reversionado',
+      texto: 'Vi algo que me gustó y lo quiero hecho con la impronta de la marca.',
+    },
+    {
+      id: 'cambios',
+      titulo: 'Un diseño de ustedes, con cambios',
+      texto: 'Me gusta una prenda suya pero le cambiaría algunas cosas.',
+    },
+  ],
+
+  // Qué se le puede cambiar a una prenda de la marca.
+  cambios: ['Talle', 'Color', 'Tela', 'Detalles'],
 }

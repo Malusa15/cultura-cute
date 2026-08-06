@@ -68,6 +68,10 @@ export default function Presupuestos() {
 
   const visibles = filtro === 'todos' ? presupuestos : presupuestos.filter((p) => p.estado === filtro)
 
+  // Los que entraron solos por el formulario de la web y siguen sin precio: son
+  // los que hay que completar.
+  const deLaWeb = presupuestos.filter((p) => p.origen === 'web' && Number(p.total) === 0).length
+
   const filtros = [
     { id: 'todos', label: 'Todos', cantidad: presupuestos.length },
     ...Object.entries(ESTADOS_PRESUPUESTO).map(([clave, texto]) => ({
@@ -174,6 +178,14 @@ export default function Presupuestos() {
             horas, sale el precio, y se baja el PDF con el logo para pasárselo a la clienta. Si lo
             acepta, después se carga como encargo en la solapa de al lado.
           </p>
+
+          {deLaWeb > 0 && (
+            <p className="admin-ayuda admin-ayuda--alerta">
+              {deLaWeb === 1
+                ? 'Hay 1 pedido que entró por el formulario de la web y todavía no tiene precio.'
+                : `Hay ${deLaWeb} pedidos que entraron por el formulario de la web y todavía no tienen precio.`}
+            </p>
+          )}
         </>
       )}
 
@@ -546,6 +558,11 @@ export default function Presupuestos() {
                     <td>#{p.numero}</td>
                     <td>
                       {p.cliente_nombre}
+                      {p.origen === 'web' && (
+                        <span className="admin-origen" title="Entró por el formulario de la web">
+                          Web
+                        </span>
+                      )}
                       {p.cliente_contacto && <div className="admin-ayuda">{p.cliente_contacto}</div>}
                     </td>
                     <td>

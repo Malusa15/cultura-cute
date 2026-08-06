@@ -128,10 +128,11 @@ export function calcular(presupuesto, materiales = []) {
 
 // --- Base de datos -----------------------------------------------------------
 
+// Las columnas van con `*` y no enumeradas a propósito: `origen` lo agrega
+// pedidos-a-medida.sql, que es un SQL aparte y puede no estar corrido todavía.
+// Pidiéndolo por nombre, la solapa entera se caería hasta que se corra.
 const SELECT_PRESUPUESTO = `
-  id, numero, cliente_nombre, cliente_contacto, prenda, descripcion, talle, medidas,
-  horas_trabajo, valor_hora, margen, descuento, total, estado, validez_dias,
-  fecha_entrega, notas, creado_en,
+  *,
   presupuesto_materiales ( id, orden, tipo, detalle, cantidad, unidad, precio_unitario )
 `
 
@@ -217,6 +218,33 @@ export async function guardarPresupuesto(presupuesto, materiales) {
   }
 
   return id
+}
+
+// Lo único que llama la tienda pública: el formulario de «Prendas a pedido»
+// deja el presupuesto en borrador para completarlo después en el panel.
+// Devuelve el número corto para poder nombrarlo en el chat.
+//
+// La función de la base fuerza todo lo que es plata en cero: del navegador solo
+// se acepta texto (ver supabase/pedidos-a-medida.sql).
+export async function registrarPedidoAMedida({
+  nombre,
+  contacto,
+  prenda,
+  descripcion,
+  talle,
+  fechaEntrega,
+}) {
+  const { data, error } = await supabase.rpc('registrar_pedido_a_medida', {
+    p_cliente_nombre: nombre,
+    p_cliente_contacto: contacto || null,
+    p_prenda: prenda,
+    p_descripcion: descripcion || null,
+    p_talle: talle || null,
+    p_fecha_entrega: fechaEntrega || null,
+  })
+
+  if (error) throw error
+  return data?.[0] ?? null
 }
 
 export async function cambiarEstadoPresupuesto(id, estado) {

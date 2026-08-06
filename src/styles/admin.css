@@ -659,6 +659,22 @@
   padding-top: 15px;
 }
 
+/* Marca los presupuestos que entraron solos por el formulario de la web: son
+   los que llegan sin precio y hay que completar. */
+.admin-origen {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--rojo);
+  color: var(--crema);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
 /* Resumen de la cuenta, en vivo mientras se carga el presupuesto. */
 .admin-cuenta {
   list-style: none;
