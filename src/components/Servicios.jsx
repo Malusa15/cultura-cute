@@ -15,15 +15,24 @@ export default function Servicios() {
             <article className="servicio" key={servicio.id}>
               <h3 className="servicio__titulo">{servicio.titulo}</h3>
               <p className="servicio__texto">{servicio.texto}</p>
-              <a
-                className="boton boton--wsp"
-                href={linkWhatsApp(servicio.consulta)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <IconoWhatsApp width={18} height={18} />
-                Consultar
-              </a>
+
+              {/* Los servicios que tienen `ancla` bajan a un formulario de la
+                  misma página en vez de abrir el chat con un mensaje vacío. */}
+              {servicio.ancla ? (
+                <a className="boton" href={`#${servicio.ancla}`}>
+                  {servicio.accion}
+                </a>
+              ) : (
+                <a
+                  className="boton boton--wsp"
+                  href={linkWhatsApp(servicio.consulta)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <IconoWhatsApp width={18} height={18} />
+                  Consultar
+                </a>
+              )}
             </article>
           ))}
         </div>

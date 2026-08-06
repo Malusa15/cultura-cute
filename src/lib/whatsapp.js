@@ -29,3 +29,24 @@ export function mensajePedido(items, total, numero = null) {
 export function mensajeConsulta(texto) {
   return texto
 }
+
+// Mensaje del formulario de personalización de la home. La idea es que llegue
+// con todo lo necesario para presupuestar sin tener que preguntar de vuelta,
+// así se puede cargar derecho en la solapa Presupuestos del panel.
+export function mensajePersonalizacion(datos) {
+  const lineas = [
+    '¡Hola Cultura.Cute! Quiero personalizar una prenda:',
+    '',
+    `Prenda: ${datos.prenda}`,
+    `Qué quiero personalizar: ${datos.alcance}`,
+  ]
+
+  if (datos.detalles.length) lineas.push(`Apliques y detalles: ${datos.detalles.join(', ')}`)
+  if (datos.talle) lineas.push(`Talle habitual: ${datos.talle}`)
+
+  lineas.push('', `Soy ${datos.nombre}`)
+  if (datos.contacto) lineas.push(`Contacto: ${datos.contacto}`)
+  if (datos.comentario) lineas.push('', datos.comentario)
+
+  return lineas.join('\n')
+}

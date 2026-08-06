@@ -74,5 +74,65 @@ export const SERVICIOS = [
       'Intervenimos prendas que ya tenés: apliques, cortes, teñidos y detalles, ' +
       'dándoles nuestra impronta Cutie conservando tu estilo.',
     consulta: 'Hola! Quiero personalizar una prenda que ya tengo',
+    // Este servicio no manda directo a WhatsApp: baja al formulario de la home,
+    // que arma el mensaje con todo lo que hace falta para presupuestar.
+    ancla: 'personalizacion',
+    accion: 'Armar mi personalización',
   },
 ]
+
+// Opciones del formulario de personalización. Viven acá y no en el componente
+// porque son contenido de la marca: agregar una prenda o un tipo de aplique es
+// editar esta lista y nada más.
+//
+// Los valores son los textos que se leen: no se guardan en ninguna base, van
+// derecho al mensaje de WhatsApp.
+export const PERSONALIZACION = {
+  prendas: [
+    'Pantalón',
+    'Pollera',
+    'Remera',
+    'Polera',
+    'Camisa',
+    'Campera',
+    'Buzo',
+    'Vestido',
+    'Top',
+    'Corset',
+    'Short',
+    'Conjunto',
+    'Otra',
+  ],
+
+  alcances: [
+    {
+      id: 'talle-y-estilo',
+      titulo: 'Talle y estilo',
+      texto: 'La prenda no me calza como quiero y además le quiero cambiar la onda.',
+    },
+    {
+      id: 'estilo',
+      titulo: 'Solo el estilo',
+      texto: 'El talle está bien, quiero cambiarle el aspecto.',
+    },
+    {
+      id: 'diseno-completo',
+      titulo: 'Diseño completo',
+      texto: 'Rehacerla de cero, con otro molde y otra idea.',
+    },
+  ],
+
+  detalles: [
+    'Tachas',
+    'Otras telas',
+    'Dibujos artísticos a mano',
+    'Cadenas',
+    'Cortes',
+    'Frunces',
+    'Encaje',
+    'Bordados',
+    'Teñido o degradé',
+    'Flecos',
+    'Otro',
+  ],
+}

@@ -127,6 +127,23 @@ El número `2235402402` se guarda como `5492235402402` en `src/data/marca.js`
 (54 Argentina + 9 celular + 223 Mar del Plata sin el 0 + número sin el 15).
 Cambiarlo ahí lo actualiza en todo el sitio.
 
+## Formulario de personalización
+
+La tarjeta **Personalización** de Servicios no abre WhatsApp: baja a la sección
+`#personalizacion` de la misma home (`src/components/Personalizacion.jsx`). Ahí se elige
+qué prenda es, hasta dónde intervenirla (talle y estilo / solo el estilo / diseño
+completo), qué apliques sumarle y los datos de la clienta. Recién al final se abre el
+chat, ya con todo escrito.
+
+No guarda nada en la base: arma el mensaje y listo. La idea es que la consulta llegue
+completa para poder cargarla derecho en la solapa Presupuestos del panel, sin el ida y
+vuelta de preguntar siempre lo mismo.
+
+Las listas de prendas, alcances y apliques están en `PERSONALIZACION`, en
+`src/data/marca.js`: agregar una opción es editar esa lista y nada más. Cualquier
+servicio de `SERVICIOS` que tenga `ancla` cambia su botón por uno que baja a esa
+sección en vez de abrir WhatsApp.
+
 ## Presupuestos
 
 La solapa **Presupuestos** del panel cotiza una prenda antes de que exista el encargo:

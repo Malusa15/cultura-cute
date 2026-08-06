@@ -2,6 +2,7 @@ import Header from './Header.jsx'
 import Hero from './Hero.jsx'
 import SobreNosotras from './SobreNosotras.jsx'
 import Servicios from './Servicios.jsx'
+import Personalizacion from './Personalizacion.jsx'
 import Tienda from './Tienda.jsx'
 import Contacto from './Contacto.jsx'
 import Footer from './Footer.jsx'
@@ -20,6 +21,7 @@ export default function Sitio() {
         <Hero />
         <SobreNosotras />
         <Servicios />
+        <Personalizacion />
         <Tienda />
         <Contacto />
       </main>
