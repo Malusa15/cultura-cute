@@ -167,7 +167,14 @@ en vez de esconderse, así se ve qué se está delegando, y lo que hubiera marca
 ahí si se arrepiente y destilda. Los datos de contacto nunca se apagan: sin nombre no se
 puede contestar.
 
-No guarda nada en la base: arma el mensaje y listo. La idea es que la consulta llegue
+Igual que el de prendas a pedido, deja un presupuesto en borrador en el panel. Usa la
+**misma** función `registrar_pedido_a_medida`: para la base son lo mismo —una consulta
+que hay que cotizar—, y lo que las distingue es la primera línea de la descripción
+(«Personalización: …» contra «Un diseño exclusivo…»). Esa línea se muestra en la lista de
+Presupuestos, así se sabe de qué se trata cada una sin abrirlas.
+
+Reusar la función tiene una ventaja concreta: no hubo que correr SQL nuevo para
+conectarlo. La idea es que la consulta llegue
 completa para poder cargarla derecho en la solapa Presupuestos del panel, sin el ida y
 vuelta de preguntar siempre lo mismo.
 

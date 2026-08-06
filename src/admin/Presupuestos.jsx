@@ -573,6 +573,13 @@ export default function Presupuestos() {
                     </td>
                     <td>
                       {p.prenda}
+                      {/* La primera línea de la descripción dice de qué tipo de
+                          consulta se trata («Personalización: …», «Un diseño
+                          exclusivo…»). Mostrarla evita tener que abrir cada uno
+                          para saber qué pidió. */}
+                      {p.descripcion && (
+                        <div className="admin-ayuda">{p.descripcion.split('\n')[0]}</div>
+                      )}
                       {p.talle && <div className="admin-ayuda">Talle {p.talle}</div>}
                     </td>
                     <td>{p.fecha_entrega ? fecha(p.fecha_entrega) : '—'}</td>

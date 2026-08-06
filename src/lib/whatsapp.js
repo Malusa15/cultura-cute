@@ -56,12 +56,14 @@ export function mensajePedidoAMedida(datos, numero = null) {
   return lineas.join('\n')
 }
 
-// Mensaje del formulario de personalización de la home. La idea es que llegue
-// con todo lo necesario para presupuestar sin tener que preguntar de vuelta,
-// así se puede cargar derecho en la solapa Presupuestos del panel.
-export function mensajePersonalizacion(datos) {
+// Mensaje del formulario de personalización de la home. `numero` es el del
+// presupuesto que quedó en borrador en el panel, igual que en prendas a pedido:
+// es lo que permite encontrar el chat en la solapa Presupuestos.
+export function mensajePersonalizacion(datos, numero = null) {
   const lineas = [
-    '¡Hola Cultura.Cute! Quiero personalizar una prenda:',
+    numero
+      ? `¡Hola Cultura.Cute! Quiero personalizar una prenda (presupuesto #${numero}):`
+      : '¡Hola Cultura.Cute! Quiero personalizar una prenda:',
     '',
     `Prenda: ${datos.prenda}`,
   ]

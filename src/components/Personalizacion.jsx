@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { PERSONALIZACION } from '../data/marca.js'
 import { linkWhatsApp, mensajePersonalizacion } from '../lib/whatsapp.js'
+import { registrarPedidoAMedida } from '../lib/presupuestos.js'
+import { supabaseConfigurado } from '../lib/supabase.js'
 import { IconoWhatsApp } from './Iconos.jsx'
 
-// Formulario de personalización. No guarda nada: junta los datos y arma el
-// mensaje de WhatsApp. La idea es que la consulta llegue completa —qué prenda,
-// hasta dónde intervenirla, qué apliques— para poder presupuestar sin ese
-// ida y vuelta de diez mensajes preguntando lo mismo de siempre.
+// Formulario de personalización.
+//
+// Igual que el de prendas a pedido, deja un presupuesto en borrador en el panel
+// para no tener que copiarlo a mano, y después abre WhatsApp. Usa la misma
+// función de alta: para la base son lo mismo —una consulta que hay que
+// cotizar—, y lo que las distingue es la descripción.
 
 const VACIO = {
   prenda: '',
@@ -27,6 +31,7 @@ const VACIO = {
 export default function Personalizacion() {
   const [form, setForm] = useState(VACIO)
   const [error, setError] = useState(null)
+  const [enviando, setEnviando] = useState(false)
 
   const campo = (nombre) => (e) => setForm((f) => ({ ...f, [nombre]: e.target.value }))
 
@@ -46,8 +51,25 @@ export default function Personalizacion() {
     .map((d) => (d === 'Otro' ? form.detalleOtro.trim() : d))
     .filter(Boolean)
 
-  const enviar = (e) => {
+  // Lo que queda escrito en el campo «Cómo es el diseño» del panel. Arranca
+  // diciendo que es una personalización para distinguirla de un pedido a medida,
+  // que van a la misma lista.
+  const armarDescripcion = () => {
+    const partes = [
+      form.cutie
+        ? 'Personalización Cutie: la intervenimos a nuestro criterio.'
+        : `Personalización: ${form.alcance}.`,
+    ]
+    if (!form.cutie && detallesFinales.length) {
+      partes.push(`Apliques y detalles: ${detallesFinales.join(', ')}`)
+    }
+    if (form.comentario.trim()) partes.push(form.comentario.trim())
+    return partes.join('\n')
+  }
+
+  const enviar = async (e) => {
     e.preventDefault()
+    if (enviando) return
 
     if (!prendaFinal) {
       setError('Contanos qué prenda querés personalizar.')
@@ -62,22 +84,60 @@ export default function Personalizacion() {
       setError('Dejanos tu nombre así sabemos con quién hablamos.')
       return
     }
+    // Ahora esto deja un presupuesto cargado en el panel, así que hace falta un
+    // contacto: si no, queda una consulta sin forma de contestarla.
+    if (!form.contacto.trim()) {
+      setError('Dejanos un contacto para poder pasarte el presupuesto.')
+      return
+    }
 
     setError(null)
+    setEnviando(true)
 
-    const mensaje = mensajePersonalizacion({
-      prenda: prendaFinal,
-      cutie: form.cutie,
-      alcance: form.cutie ? '' : form.alcance,
-      detalles: form.cutie ? [] : detallesFinales,
-      nombre: form.nombre.trim(),
-      contacto: form.contacto.trim(),
-      talle: form.talle.trim(),
-      comentario: form.comentario.trim(),
-    })
+    // La pestaña se abre ANTES del await: si se abriera después el navegador la
+    // trataría como popup y la bloquearía.
+    const pestana = window.open('', '_blank')
 
-    // Se abre desde el click, así que no lo frena el bloqueador de pop-ups.
-    window.open(linkWhatsApp(mensaje), '_blank', 'noopener')
+    // Si la base falla igual se abre el chat: perder el registro es molesto,
+    // perder la consulta es peor.
+    let numero = null
+    if (supabaseConfigurado) {
+      try {
+        numero =
+          (
+            await registrarPedidoAMedida({
+              nombre: form.nombre.trim(),
+              contacto: form.contacto.trim(),
+              prenda: prendaFinal,
+              descripcion: armarDescripcion(),
+              talle: form.talle.trim(),
+              fechaEntrega: '',
+            })
+          )?.numero ?? null
+      } catch (err) {
+        console.error('No se pudo registrar la personalización:', err?.message ?? String(err))
+      }
+    }
+
+    const mensaje = mensajePersonalizacion(
+      {
+        prenda: prendaFinal,
+        cutie: form.cutie,
+        alcance: form.cutie ? '' : form.alcance,
+        detalles: form.cutie ? [] : detallesFinales,
+        nombre: form.nombre.trim(),
+        contacto: form.contacto.trim(),
+        talle: form.talle.trim(),
+        comentario: form.comentario.trim(),
+      },
+      numero,
+    )
+
+    const url = linkWhatsApp(mensaje)
+    if (pestana) pestana.location = url
+    else window.location.href = url
+
+    setEnviando(false)
   }
 
   return (
@@ -226,7 +286,7 @@ export default function Personalizacion() {
               </label>
 
               <label className="personalizar__campo">
-                <span className="personalizar__label">Instagram o teléfono (opcional)</span>
+                <span className="personalizar__label">Instagram o teléfono</span>
                 <input
                   className="personalizar__control"
                   value={form.contacto}
@@ -263,9 +323,9 @@ export default function Personalizacion() {
             </p>
           )}
 
-          <button type="submit" className="boton boton--wsp boton--ancho">
+          <button type="submit" className="boton boton--wsp boton--ancho" disabled={enviando}>
             <IconoWhatsApp width={18} height={18} />
-            Enviar por WhatsApp
+            {enviando ? 'Enviando…' : 'Enviar por WhatsApp'}
           </button>
         </form>
       </div>
