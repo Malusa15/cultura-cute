@@ -68,9 +68,12 @@ export default function Presupuestos() {
 
   const visibles = filtro === 'todos' ? presupuestos : presupuestos.filter((p) => p.estado === filtro)
 
-  // Los que entraron solos por el formulario de la web y siguen sin precio: son
-  // los que hay que completar.
-  const deLaWeb = presupuestos.filter((p) => p.origen === 'web' && Number(p.total) === 0).length
+  // Los que entraron solos por el formulario de la web y siguen en borrador.
+  //
+  // Antes esto miraba que el total estuviera en cero, pero apenas les ponías el
+  // precio el aviso desaparecía aunque todavía no se los hubieras mandado a
+  // nadie. El estado lo manejás vos, así que es una señal más confiable.
+  const deLaWeb = presupuestos.filter((p) => p.origen === 'web' && p.estado === 'borrador').length
 
   const filtros = [
     { id: 'todos', label: 'Todos', cantidad: presupuestos.length },
@@ -129,15 +132,18 @@ export default function Presupuestos() {
 
   // Guardar y bajar el PDF de una: es lo que se hace el 90% de las veces, y así
   // el PDF sale siempre con lo último que se escribió.
+  //
+  // El PDF se arma con lo que hay en el formulario y no releyendo la lista: es
+  // lo mismo que se acaba de guardar, y cada viaje de más a la base retrasa la
+  // descarga (algunos navegadores la bloquean si tarda mucho después del click).
   const guardarYDescargar = () => {
     if (!validar()) return
     setGuardando(true)
     correr(async () => {
-      const id = await guardarPresupuesto(form, materiales)
-      // Se relee para tomar el número que asignó la base, que en un presupuesto
-      // nuevo todavía no existe en el formulario.
-      const guardado = (await traerPresupuestos()).find((p) => p.id === id)
-      await descargarPresupuestoPdf(guardado ?? form, guardado?.materiales ?? materiales)
+      // El número lo asigna la base al insertar; en un presupuesto nuevo el
+      // formulario todavía no lo tiene.
+      const { id, numero } = await guardarPresupuesto(form, materiales)
+      await descargarPresupuestoPdf({ ...form, id, numero }, materiales)
       cerrar()
     }).finally(() => setGuardando(false))
   }
@@ -182,8 +188,8 @@ export default function Presupuestos() {
           {deLaWeb > 0 && (
             <p className="admin-ayuda admin-ayuda--alerta">
               {deLaWeb === 1
-                ? 'Hay 1 pedido que entró por el formulario de la web y todavía no tiene precio.'
-                : `Hay ${deLaWeb} pedidos que entraron por el formulario de la web y todavía no tienen precio.`}
+                ? 'Hay 1 pedido que entró por el formulario de la web y sigue en borrador.'
+                : `Hay ${deLaWeb} pedidos que entraron por el formulario de la web y siguen en borrador.`}
             </p>
           )}
         </>

@@ -189,7 +189,11 @@ export async function guardarPresupuesto(presupuesto, materiales) {
     notas: presupuesto.notas?.trim() || null,
   }
 
+  // Se devuelven id y número: el número lo asigna la base recién al insertar, y
+  // hace falta para el PDF. Traerlo acá evita tener que releer la lista entera
+  // después de guardar.
   let id = presupuesto.id
+  let numero = presupuesto.numero ?? null
 
   if (id) {
     const { error } = await supabase.from('presupuestos').update(fila).eq('id', id)
@@ -204,10 +208,11 @@ export async function guardarPresupuesto(presupuesto, materiales) {
     const { data, error } = await supabase
       .from('presupuestos')
       .insert(fila)
-      .select('id')
+      .select('id, numero')
       .single()
     if (error) throw error
     id = data.id
+    numero = data.numero
   }
 
   if (limpios.length) {
@@ -217,7 +222,7 @@ export async function guardarPresupuesto(presupuesto, materiales) {
     if (error) throw error
   }
 
-  return id
+  return { id, numero }
 }
 
 // Lo único que llama la tienda pública: el formulario de «Prendas a pedido»

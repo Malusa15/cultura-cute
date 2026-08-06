@@ -406,5 +406,25 @@ export async function descargarPresupuestoPdf(presupuesto, materiales) {
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 
-  doc.save(`Presupuesto-${presupuesto.numero ?? 'sn'}-${nombre || 'CulturaCute'}.pdf`)
+  const archivo = `Presupuesto-${presupuesto.numero ?? 'sn'}-${nombre || 'CulturaCute'}.pdf`
+
+  // Se baja con un link propio en vez de con doc.save() de jsPDF: save() usa
+  // solo el atributo `download`, y los navegadores de celular lo ignoran para
+  // los blobs, as\u00ed que ah\u00ed no pasaba nada al tocar el bot\u00f3n. Con `download` M\u00c1S
+  // target="_blank", el que puede bajarlo lo baja con el nombre lindo y el que
+  // no, al menos lo abre en otra pesta\u00f1a para poder compartirlo.
+  const url = URL.createObjectURL(doc.output('blob'))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = archivo
+  link.target = '_blank'
+  link.rel = 'noopener'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+
+  // Liberar el blob enseguida cancelar\u00eda la descarga si todav\u00eda no arranc\u00f3.
+  setTimeout(() => URL.revokeObjectURL(url), 60000)
+
+  return archivo
 }
