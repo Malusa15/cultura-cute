@@ -19,15 +19,45 @@ Ojo con la ruta de `dev`: el sitio cuelga de `/cultura-cute/` y no de la raíz
 
 ## Publicación
 
-Cada push a `main` dispara `.github/workflows/deploy.yml`, que buildea y publica en
-GitHub Pages. No hay que hacer nada a mano.
+Hoy el sitio se publica en **los dos lados a la vez**, mientras dura la mudanza a Vercel:
 
-Como Pages sirve el sitio desde un subdirectorio, `vite.config.js` define
-`base: '/cultura-cute/'`. Vite aplica ese prefijo en el HTML y el CSS, pero **no**
-dentro de strings de JavaScript, así que las rutas a `public/` que viven en el código
-(fotos de productos, logos) pasan por el helper `asset()` de `src/lib/rutas.js`.
-Si alguna vez se mueve a un dominio propio, alcanza con cambiar `base` y actualizar
-las meta de Open Graph en `index.html`.
+| | GitHub Pages | Vercel |
+|---|---|---|
+| URL | `malusa15.github.io/cultura-cute/` | la de `.vercel.app` |
+| Qué lo dispara | `.github/workflows/deploy.yml` en cada push a `main` | cada push a `main` |
+| `base` de Vite | `/cultura-cute/` | `/` |
+| Rutas tipo `/admin` | el truco de `public/404.html` | el rewrite de `vercel.json` |
+
+`vite.config.js` elige el `base` según `process.env.VERCEL`, que Vercel define solo en
+sus builds. Por eso los dos deploys conviven sin pisarse y el sitio viejo sigue
+funcionando hasta que se decida apagarlo.
+
+Vite aplica el prefijo del `base` en el HTML y el CSS, pero **no** dentro de strings de
+JavaScript, así que las rutas a `public/` que viven en el código (fotos, logos) pasan
+por el helper `asset()` de `src/lib/rutas.js`. `fotoUrl()` además saca un `/cultura-cute`
+guardado en la base: en Vercel el sitio cuelga de la raíz y una foto cargada en la época
+de Pages quedaría rota.
+
+### Terminar la mudanza a Vercel
+
+Lo que falta hacer **desde la web de Vercel** (son acciones de cuenta):
+
+1. Entrar a [vercel.com](https://vercel.com) con la cuenta de GitHub.
+2. *Add New… → Project* e importar el repo `Malusa15/cultura-cute`. Detecta Vite solo;
+   `vercel.json` se encarga del resto.
+3. **Antes de darle Deploy**, cargar las dos variables de entorno (están en `.env.local`):
+   `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. Sin eso el panel arranca sin base.
+4. Deploy, y probar la URL `.vercel.app` que queda: la tienda, `/admin` y una foto.
+
+Después, cuando esté andando:
+
+- **Dominio propio**: se registra y se apunta desde *Settings → Domains* de Vercel. Esto
+  es lo que quedó pendiente con GitHub Pages, donde el dominio hay que sostenerlo con un
+  archivo `CNAME` que cada deploy pisa.
+- En Supabase, *Authentication → URL Configuration*, poner el dominio nuevo como **Site
+  URL** para que los mails de recuperación de contraseña apunten bien.
+- Recién ahí, apagar GitHub Pages: borrar `.github/workflows/deploy.yml` y `public/404.html`,
+  y dejar `base: '/'` fijo en `vite.config.js`.
 
 Requiere Node 18+ (instalado: v24).
 

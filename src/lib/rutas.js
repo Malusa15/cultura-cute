@@ -17,12 +17,27 @@ export function asset(ruta) {
 // ruta ya prefijada volviera a pasar por acá quedaría "/cultura-cute/cultura-cute/…",
 // así que de paso sacamos los prefijos repetidos que puedan haber quedado
 // guardados antes de que esto fuera así.
+// Prefijos viejos que pueden haber quedado guardados en la base. `/cultura-cute`
+// va escrito a mano y no sale de BASE_URL a propósito: en Vercel el sitio cuelga
+// de la raíz, ahí BASE_URL es "/" y el bucle de abajo no sacaría nada, así que
+// una foto guardada en la época de GitHub Pages quedaría rota.
+const PREFIJOS_VIEJOS = [base, '/cultura-cute'].filter(Boolean)
+
 export function fotoUrl(ruta) {
   if (!ruta) return null
   if (/^https?:\/\//.test(ruta)) return ruta
 
   let limpia = ruta
-  while (base && limpia.startsWith(`${base}/`)) limpia = limpia.slice(base.length)
+  let saco = true
+  while (saco) {
+    saco = false
+    for (const viejo of PREFIJOS_VIEJOS) {
+      if (limpia.startsWith(`${viejo}/`)) {
+        limpia = limpia.slice(viejo.length)
+        saco = true
+      }
+    }
+  }
 
   return asset(limpia)
 }
