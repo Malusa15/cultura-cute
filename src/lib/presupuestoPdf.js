@@ -79,7 +79,9 @@ function pintarHoja(doc) {
 // Devuelve la y donde seguir escribiendo, saltando de página si lo que viene
 // (`alto`) no entra en lo que queda.
 function espacio(doc, y, alto) {
-  if (y + alto <= HOJA.alto - 22) return y
+  // El pie arranca en alto - 15, así que se puede escribir hasta alto - 20 sin
+  // pisarlo.
+  if (y + alto <= HOJA.alto - 20) return y
   doc.addPage()
   pintarHoja(doc)
   return MARGEN + 5
@@ -97,11 +99,10 @@ function titulo(doc, y, texto, alto = 20) {
   doc.setDrawColor(...BORDE)
   doc.setLineWidth(0.3)
   doc.line(MARGEN, arriba + 2, HOJA.ancho - MARGEN, arriba + 2)
-  return arriba + 8
+  return arriba + 6.5
 }
 
-// Par etiqueta/valor en columna. Se usa para los datos de la clienta y para las
-// medidas, que son lo mismo: un rótulo chico arriba y el dato abajo.
+// Par etiqueta/valor en columna: un rótulo chico arriba y el dato abajo.
 function dato(doc, x, y, ancho, etiqueta, valor) {
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(6.5)
@@ -109,12 +110,12 @@ function dato(doc, x, y, ancho, etiqueta, valor) {
   doc.text(etiqueta.toUpperCase(), x, y, { charSpace: 0.4 })
 
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(9.5)
+  doc.setFontSize(9)
   doc.setTextColor(...TINTA)
   const lineas = doc.splitTextToSize(String(valor), ancho)
-  doc.text(lineas, x, y + 4.5)
+  doc.text(lineas, x, y + 4)
 
-  return 4.5 + lineas.length * 4.4
+  return 4 + lineas.length * 4
 }
 
 // Grilla de datos en `columnas` columnas. Devuelve la y de abajo de todo.
@@ -125,15 +126,55 @@ function grilla(doc, y, columnas, items) {
 
   items.forEach((item, i) => {
     if (i % columnas === 0 && i > 0) {
-      fila += alto + 3
+      fila += alto + 2
       alto = 0
     }
-    if (i % columnas === 0) fila = espacio(doc, fila, 12)
+    if (i % columnas === 0) fila = espacio(doc, fila, 11)
     const usado = dato(doc, MARGEN + (i % columnas) * ancho, fila, ancho - 6, item.etiqueta, item.valor)
     alto = Math.max(alto, usado)
   })
 
-  return fila + alto + 4
+  return fila + alto + 3
+}
+
+// Un grupo de medidas en un renglón: el nombre del grupo en la izquierda y los
+// valores corridos al lado, separados por puntos.
+//
+// Antes cada medida era una ficha de dos renglones en una grilla de cuatro
+// columnas, y la ficha completa se comía media hoja. Así entra en dos o tres
+// renglones por grupo. El «cm» no se repite: ya está en el título de la sección.
+
+// La columna del nombre del grupo se mide, no se estima: escrita a ojo, un
+// nombre largo como «Largos de la prenda» se montaba encima de los valores.
+function anchoDeGrupos(doc, grupos) {
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  const mayor = Math.max(
+    // getTextWidth no cuenta el charSpace, así que se suma aparte.
+    ...grupos.map((g) => doc.getTextWidth(g.grupo.toUpperCase()) + g.grupo.length * 0.3),
+  )
+  return Math.max(26, mayor + 4)
+}
+
+function grupoDeMedidas(doc, y, grupo, medidas, gutter) {
+  const texto = grupo.campos.map((c) => `${c.label} ${medidas[c.id]}`).join('   ·   ')
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8.5)
+  const lineas = doc.splitTextToSize(texto, ANCHO - gutter)
+  const fila = espacio(doc, y, lineas.length * 4.1 + 2)
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.setTextColor(...ROJO)
+  doc.text(grupo.grupo.toUpperCase(), MARGEN, fila, { charSpace: 0.3 })
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8.5)
+  doc.setTextColor(...TINTA)
+  doc.text(lineas, MARGEN + gutter, fila)
+
+  return fila + lineas.length * 4.1 + 1.5
 }
 
 const COLUMNAS_MATERIAL = [
@@ -161,7 +202,7 @@ function encabezadoTabla(doc, y) {
     x += col.ancho
   })
 
-  return y + 7
+  return y + 6.5
 }
 
 function tablaMateriales(doc, y, materiales) {
@@ -169,7 +210,7 @@ function tablaMateriales(doc, y, materiales) {
 
   materiales.forEach((material) => {
     const antes = fila
-    fila = espacio(doc, fila, 8)
+    fila = espacio(doc, fila, 7)
     // Si hubo salto de página, la tabla vuelve a encabezarse: una lista de
     // números sin títulos arriba no se entiende.
     if (fila !== antes) fila = encabezadoTabla(doc, fila)
@@ -187,29 +228,29 @@ function tablaMateriales(doc, y, materiales) {
     doc.setTextColor(...TINTA)
 
     let x = MARGEN + 2
-    let alto = 5
+    let alto = 4.6
     celdas.forEach((texto, i) => {
       const col = COLUMNAS_MATERIAL[i]
       const dentro = col.ancho - 4
       const lineas = doc.splitTextToSize(String(texto), dentro)
       doc.text(lineas, col.derecha ? x + dentro : x, fila, { align: col.derecha ? 'right' : 'left' })
-      alto = Math.max(alto, lineas.length * 4.2 + 1)
+      alto = Math.max(alto, lineas.length * 4 + 0.8)
       x += col.ancho
     })
 
     doc.setDrawColor(...BORDE)
     doc.setLineWidth(0.2)
-    doc.line(MARGEN, fila + alto - 2.5, HOJA.ancho - MARGEN, fila + alto - 2.5)
+    doc.line(MARGEN, fila + alto - 2.4, HOJA.ancho - MARGEN, fila + alto - 2.4)
     fila += alto
   })
 
-  return fila + 2
+  return fila + 1.5
 }
 
 // Bloque de totales, alineado a la derecha como en cualquier factura.
 function totales(doc, y, cuenta, presupuesto) {
   const izquierda = HOJA.ancho - MARGEN - 90
-  let fila = espacio(doc, y, 55)
+  let fila = espacio(doc, y, 48)
 
   const renglones = [
     ['Materiales', precio(cuenta.materiales)],
@@ -231,19 +272,19 @@ function totales(doc, y, cuenta, presupuesto) {
   renglones.forEach(([etiqueta, valor]) => {
     doc.text(etiqueta, izquierda, fila)
     doc.text(valor, HOJA.ancho - MARGEN, fila, { align: 'right' })
-    fila += 5.5
+    fila += 5
   })
 
-  fila += 2
+  fila += 1.5
   doc.setFillColor(...ROJO)
-  doc.rect(izquierda - 4, fila - 5, 94, 12, 'F')
+  doc.rect(izquierda - 4, fila - 4.8, 94, 11.5, 'F')
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
   doc.setTextColor(...CREMA)
   doc.text('TOTAL', izquierda, fila + 2.5, { charSpace: 0.6 })
   doc.text(precio(cuenta.total), HOJA.ancho - MARGEN - 2, fila + 2.5, { align: 'right' })
 
-  fila += 12
+  fila += 11
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(...TINTA)
@@ -254,25 +295,25 @@ function totales(doc, y, cuenta, presupuesto) {
     { align: 'right' },
   )
 
-  return fila + 8
+  return fila + 6
 }
 
 // Cuánto va a ocupar el párrafo. Hace falta saberlo ANTES de escribir el
 // título, para pedirle el espacio de los dos juntos.
 function altoParrafo(doc, texto) {
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(9.5)
-  return doc.splitTextToSize(texto, ANCHO).length * 4.6 + 4
+  doc.setFontSize(9)
+  return doc.splitTextToSize(texto, ANCHO).length * 4.3 + 3
 }
 
 function parrafo(doc, y, texto) {
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(9.5)
+  doc.setFontSize(9)
   const lineas = doc.splitTextToSize(texto, ANCHO)
-  const fila = espacio(doc, y, lineas.length * 4.6)
+  const fila = espacio(doc, y, lineas.length * 4.3)
   doc.setTextColor(...TINTA)
   doc.text(lineas, MARGEN, fila)
-  return fila + lineas.length * 4.6 + 4
+  return fila + lineas.length * 4.3 + 3
 }
 
 // --- Documento ---------------------------------------------------------------
@@ -289,35 +330,35 @@ export async function armarPresupuestoPdf(presupuesto, materiales) {
   // Encabezado: el logo a la izquierda, el número y la fecha a la derecha.
   const logo = await cargarLogo()
   if (logo) {
-    const ancho = 58
+    const ancho = 46
     doc.addImage(logo.dataUrl, 'PNG', MARGEN, MARGEN, ancho, ancho / logo.ratio)
   } else {
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(22)
+    doc.setFontSize(19)
     doc.setTextColor(...ROJO)
-    doc.text(MARCA.nombre, MARGEN, MARGEN + 12)
+    doc.text(MARCA.nombre, MARGEN, MARGEN + 10)
   }
 
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(15)
+  doc.setFontSize(14)
   doc.setTextColor(...ROJO)
-  doc.text('PRESUPUESTO', HOJA.ancho - MARGEN, MARGEN + 8, { align: 'right', charSpace: 1 })
+  doc.text('PRESUPUESTO', HOJA.ancho - MARGEN, MARGEN + 6, { align: 'right', charSpace: 1 })
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(...TINTA)
   // Un presupuesto recién armado todavía no tiene número: se numera al guardar.
   const numero = presupuesto.numero ? `N° ${presupuesto.numero}` : 'Sin numerar'
-  doc.text(numero, HOJA.ancho - MARGEN, MARGEN + 14, { align: 'right' })
-  doc.text(fechaLarga(presupuesto.creado_en), HOJA.ancho - MARGEN, MARGEN + 19, { align: 'right' })
+  doc.text(numero, HOJA.ancho - MARGEN, MARGEN + 12, { align: 'right' })
+  doc.text(fechaLarga(presupuesto.creado_en), HOJA.ancho - MARGEN, MARGEN + 17, { align: 'right' })
 
   doc.setDrawColor(...ROJO)
   doc.setLineWidth(0.8)
-  doc.line(MARGEN, MARGEN + 30, HOJA.ancho - MARGEN, MARGEN + 30)
+  doc.line(MARGEN, MARGEN + 23, HOJA.ancho - MARGEN, MARGEN + 23)
 
-  let y = MARGEN + 42
+  let y = MARGEN + 33
 
-  y = titulo(doc, y, 'Datos', 32)
+  y = titulo(doc, y, 'Datos', 30)
   y = grilla(doc, y, 3, [
     { etiqueta: 'Clienta', valor: presupuesto.cliente_nombre },
     { etiqueta: 'Contacto', valor: presupuesto.cliente_contacto || '—' },
@@ -345,30 +386,22 @@ export async function armarPresupuestoPdf(presupuesto, materiales) {
   })).filter((grupo) => grupo.campos.length)
 
   if (conValor.length) {
-    y = titulo(doc, y, 'Medidas (cm)', 28)
+    y = titulo(doc, y, 'Medidas (cm)', 18)
+    const gutter = anchoDeGrupos(doc, conValor)
     conValor.forEach((grupo) => {
-      y = espacio(doc, y, 14)
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(8)
-      doc.setTextColor(...TINTA)
-      doc.text(grupo.grupo, MARGEN, y)
-      y = grilla(
-        doc,
-        y + 5,
-        4,
-        grupo.campos.map((c) => ({ etiqueta: c.label, valor: `${medidas[c.id]} cm` })),
-      )
+      y = grupoDeMedidas(doc, y, grupo, medidas, gutter)
     })
+    y += 2
   }
 
   if (materiales.length) {
-    y = titulo(doc, y, 'Materiales', 26)
+    y = titulo(doc, y, 'Materiales', 24)
     y = tablaMateriales(doc, y, materiales)
   }
 
-  // La cuenta entera (renglones + caja del total + seña) mide unos 55 mm: si no
+  // La cuenta entera (renglones + caja del total + seña) mide unos 48 mm: si no
   // entra, arranca en la página siguiente con su título.
-  y = titulo(doc, y + 4, 'Cuenta', 60)
+  y = titulo(doc, y + 3, 'Cuenta', 53)
   y = totales(doc, y, cuenta, presupuesto)
 
   if (presupuesto.notas?.trim()) {
@@ -377,20 +410,21 @@ export async function armarPresupuestoPdf(presupuesto, materiales) {
     y = parrafo(doc, y, texto)
   }
 
-  y = espacio(doc, y + 2, 14)
+  // El alto del aviso se mide en vez de estimarse: con un número fijo y generoso,
+  // estas dos líneas se llevaban una hoja entera para ellas solas.
+  doc.setFont('helvetica', 'italic')
+  doc.setFontSize(8)
+  const aviso = doc.splitTextToSize(
+    `Presupuesto válido por ${Number(presupuesto.validez_dias)} días desde la fecha. ` +
+      'Los precios pueden cambiar si cambian los materiales. Cada prenda es única y se ' +
+      'confecciona a mano en Mar del Plata.',
+    ANCHO,
+  )
+  y = espacio(doc, y + 2, aviso.length * 3.6)
   doc.setFont('helvetica', 'italic')
   doc.setFontSize(8)
   doc.setTextColor(...ROJO)
-  doc.text(
-    doc.splitTextToSize(
-      `Presupuesto válido por ${Number(presupuesto.validez_dias)} días desde la fecha. ` +
-        'Los precios pueden cambiar si cambian los materiales. Cada prenda es única y se ' +
-        'confecciona a mano en Mar del Plata.',
-      ANCHO,
-    ),
-    MARGEN,
-    y,
-  )
+  doc.text(aviso, MARGEN, y)
 
   return doc
 }
