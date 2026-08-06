@@ -32,7 +32,10 @@ function hoy() {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
 }
 
-export default function PedidoAMedida() {
+// `abierto` y `alternar` los maneja Sitio.jsx: el formulario arranca cerrado y
+// abrirlo cierra el de personalización. Lo que ya se completó no se pierde al
+// cerrarlo (la sección sigue montada, lo único que se esconde es el formulario).
+export default function PedidoAMedida({ abierto, alternar }) {
   const [form, setForm] = useState(VACIO)
   const [error, setError] = useState(null)
   const [enviando, setEnviando] = useState(false)
@@ -152,7 +155,18 @@ export default function PedidoAMedida() {
           y nosotras te pasamos el presupuesto.
         </p>
 
-        <form className="personalizar" onSubmit={enviar}>
+        <button
+          type="button"
+          className={`boton personalizar__abrir ${abierto ? 'boton--fantasma' : ''}`}
+          aria-expanded={abierto}
+          aria-controls="formulario-a-medida"
+          onClick={alternar}
+        >
+          {abierto ? 'Cerrar' : 'Completar el pedido'}
+        </button>
+
+        {abierto && (
+        <form className="personalizar" id="formulario-a-medida" onSubmit={enviar}>
           {/* --- 1. Qué tipo de pedido --- */}
           <fieldset className="personalizar__paso">
             <legend className="personalizar__titulo">1 · ¿Qué tenés en mente?</legend>
@@ -319,6 +333,7 @@ export default function PedidoAMedida() {
             {enviando ? 'Enviando…' : 'Enviar por WhatsApp'}
           </button>
         </form>
+        )}
       </div>
     </section>
   )

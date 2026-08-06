@@ -28,7 +28,10 @@ const VACIO = {
   comentario: '',
 }
 
-export default function Personalizacion() {
+// `abierto` y `alternar` los maneja Sitio.jsx: el formulario arranca cerrado y
+// abrirlo cierra el de prendas a pedido. Lo que ya se completó no se pierde al
+// cerrarlo (la sección sigue montada, lo único que se esconde es el formulario).
+export default function Personalizacion({ abierto, alternar }) {
   const [form, setForm] = useState(VACIO)
   const [error, setError] = useState(null)
   const [enviando, setEnviando] = useState(false)
@@ -155,7 +158,18 @@ export default function Personalizacion() {
           presupuesto.
         </p>
 
-        <form className="personalizar" onSubmit={enviar}>
+        <button
+          type="button"
+          className={`boton personalizar__abrir ${abierto ? 'boton--fantasma' : ''}`}
+          aria-expanded={abierto}
+          aria-controls="formulario-personalizacion"
+          onClick={alternar}
+        >
+          {abierto ? 'Cerrar' : 'Personalizar una prenda'}
+        </button>
+
+        {abierto && (
+        <form className="personalizar" id="formulario-personalizacion" onSubmit={enviar}>
           {/* --- 1. Qué prenda --- */}
           <fieldset className="personalizar__paso">
             <legend className="personalizar__titulo">1 · ¿Qué prenda es?</legend>
@@ -328,6 +342,7 @@ export default function Personalizacion() {
             {enviando ? 'Enviando…' : 'Enviar por WhatsApp'}
           </button>
         </form>
+        )}
       </div>
     </section>
   )

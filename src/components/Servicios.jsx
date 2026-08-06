@@ -2,7 +2,11 @@ import { SERVICIOS } from '../data/marca.js'
 import { linkWhatsApp } from '../lib/whatsapp.js'
 import { IconoWhatsApp } from './Iconos.jsx'
 
-export default function Servicios() {
+// Los dos servicios que bajan a un formulario plegado: el link tiene que
+// abrirlo, si no la persona llega a la sección y encuentra solo el título.
+const FORMULARIOS = ['a-medida', 'personalizacion']
+
+export default function Servicios({ onIrAFormulario }) {
   return (
     <section className="seccion" id="servicios" aria-labelledby="titulo-servicios">
       <div className="contenedor">
@@ -16,10 +20,18 @@ export default function Servicios() {
               <h3 className="servicio__titulo">{servicio.titulo}</h3>
               <p className="servicio__texto">{servicio.texto}</p>
 
-              {/* Los servicios que tienen `ancla` bajan a un formulario de la
-                  misma página en vez de abrir el chat con un mensaje vacío. */}
+              {/* Los servicios que tienen `ancla` bajan a una sección de la
+                  misma página en vez de abrir el chat con un mensaje vacío. El
+                  href sigue siendo el que baja; el onClick solo abre el
+                  formulario que hay al final del viaje. */}
               {servicio.ancla ? (
-                <a className="boton" href={`#${servicio.ancla}`}>
+                <a
+                  className="boton"
+                  href={`#${servicio.ancla}`}
+                  onClick={() => {
+                    if (FORMULARIOS.includes(servicio.ancla)) onIrAFormulario(servicio.ancla)
+                  }}
+                >
                   {servicio.accion}
                 </a>
               ) : (

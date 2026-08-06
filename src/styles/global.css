@@ -648,6 +648,13 @@ ul {
   margin-bottom: 36px;
 }
 
+/* Botón que despliega el formulario. Los dos formularios arrancan cerrados y
+   solo puede haber uno abierto, así que este botón es la puerta de entrada. */
+.personalizar__abrir {
+  align-self: flex-start;
+  margin-bottom: 24px;
+}
+
 .personalizar {
   display: flex;
   flex-direction: column;
