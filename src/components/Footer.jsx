@@ -36,18 +36,15 @@ export default function Footer() {
           </a>
         </div>
 
+        {/* La entrada al panel va acá adentro, como un ítem más de la línea legal
+            y con la misma letra: así se lee como parte del pie y no como un botón.
+            La encuentra quien la busca y no le llama la atención a quien vino a ver
+            prendas. Tampoco es un secreto: /admin pide usuario y contraseña igual. */}
         <p className="footer__copy">
-          <span>
-            © {new Date().getFullYear()} {MARCA.nombre} · {MARCA.ciudad} · Prendas artesanales y
-            limitadas.
-          </span>
-
-          {/* Entrada al panel. Va acá abajo y apagada a propósito: la encuentra
-              quien la busca y no le llama la atención a quien vino a ver prendas.
-              No es un secreto —/admin pide usuario y contraseña igual—, es no
-              ensuciar la tienda con un botón que no es para la clienta. */}
+          © {new Date().getFullYear()} {MARCA.nombre} · {MARCA.ciudad} · Prendas artesanales y
+          limitadas.{' · '}
           <Link className="footer__panel" to="/admin">
-            Panel
+            Administración
           </Link>
         </p>
       </div>

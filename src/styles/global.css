@@ -1556,11 +1556,6 @@ ul {
 
 .footer__copy {
   width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   padding-top: 24px;
   border-top: 1px solid rgba(255, 252, 232, 0.2);
   font-family: var(--sans);
@@ -1569,19 +1564,17 @@ ul {
   opacity: 0.6;
 }
 
-/* Entrada al panel: apagada hasta que se la toca. No se esconde del todo —tiene
-   que poder encontrarse y llegarse con el teclado—, simplemente no compite con
-   nada de lo que la clienta vino a mirar. */
+/* Entrada al panel. Hereda letra, tamaño, color y opacidad de la línea legal a
+   propósito: se lee como un ítem más del pie y no como un botón. Lo único que la
+   delata es el subrayado al pasarle el mouse, para que se note que se puede
+   tocar. No se esconde del todo porque tiene que alcanzarse con el teclado. */
 .footer__panel {
   color: inherit;
   text-decoration: none;
-  opacity: 0.45;
-  transition: opacity var(--transicion);
 }
 
 .footer__panel:hover,
 .footer__panel:focus-visible {
-  opacity: 1;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
