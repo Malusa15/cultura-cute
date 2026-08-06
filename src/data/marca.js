@@ -66,6 +66,10 @@ export const SERVICIOS = [
       'Series cortas de confección artesanal. Cada pieza se hace de a una, ' +
       'así que cuando se agota difícilmente volvemos a hacerla igual.',
     consulta: 'Hola! Quiero consultar por las piezas únicas',
+    // Las piezas únicas ya están publicadas: en vez de preguntar por chat qué
+    // hay, se baja a la tienda y se ven.
+    ancla: 'tienda',
+    accion: 'Ver la tienda',
   },
   {
     id: 'personalizacion',
