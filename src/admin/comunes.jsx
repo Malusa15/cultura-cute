@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
-// Las cuatro secciones nuevas hacen todas lo mismo: traer una lista, mostrar el
-// error si falla, y recargar después de cada cambio. Esto es ese andamiaje.
-export function useLista(traer) {
-  const [datos, setDatos] = useState([])
+// Las secciones nuevas hacen todas lo mismo: traer una lista, mostrar el error
+// si falla, y recargar después de cada cambio. Esto es ese andamiaje.
+//
+// `inicial` es lo que se muestra mientras carga. Casi siempre una lista vacía,
+// pero Economía trae varias listas juntas y necesita un objeto.
+export function useLista(traer, inicial = []) {
+  const [datos, setDatos] = useState(inicial)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
 

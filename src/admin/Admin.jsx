@@ -12,10 +12,13 @@ import Presupuestos from './Presupuestos.jsx'
 import Encargos from './Encargos.jsx'
 import Reservas from './Reservas.jsx'
 import Envios from './Envios.jsx'
+import Economia from './Economia.jsx'
 
 // El orden sigue el recorrido de una prenda: primero el catálogo, después lo que
 // pasa cuando alguien la compra. Presupuestos va antes de Encargos porque es el
 // paso previo: primero se cotiza, y si la clienta acepta se vuelve encargo.
+// Economía va al final porque no es un paso del recorrido: es la plata que dejó
+// todo lo anterior.
 const SOLAPAS = [
   { id: 'prendas', label: 'Prendas' },
   { id: 'categorias', label: 'Categorías' },
@@ -24,6 +27,7 @@ const SOLAPAS = [
   { id: 'encargos', label: 'Encargos' },
   { id: 'reservas', label: 'Reservas' },
   { id: 'envios', label: 'Envíos' },
+  { id: 'economia', label: 'Economía' },
 ]
 
 // Aviso para cuando el panel se abre sin credenciales cargadas. Sin esto, el
@@ -127,6 +131,7 @@ export default function Admin() {
         {solapa === 'encargos' && <Encargos />}
         {solapa === 'reservas' && <Reservas />}
         {solapa === 'envios' && <Envios />}
+        {solapa === 'economia' && <Economia />}
       </main>
     </div>
   )

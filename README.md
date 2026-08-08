@@ -241,6 +241,55 @@ siempre se llenan a medias y la lista cambia según la prenda. Las claves las de
 `MEDIDAS` en `src/lib/presupuestos.js`; agregar una medida nueva es agregarla ahí y no
 tocar SQL. Cambiarle la clave a una que ya se usó, en cambio, deja huérfano lo cargado.
 
+## Economía
+
+La solapa **Economía** del panel lleva la plata de la marca: cada vez que entra o sale
+algo se carga un movimiento en una caja.
+
+Las cajas son dos, y arrancan creadas:
+
+- **Caja chica** — el efectivo del día a día (una tela, el flete, el packaging).
+- **Caja grande** — el fondo de la marca (lo que se guarda, la cuenta, el banco).
+
+Se pueden agregar más desde el botón *Cajas* (Mercado Pago, una cuenta aparte). El
+**saldo inicial** de cada una es lo que había adentro el día que se empezó a anotar: sin
+eso el saldo arrancaría en cero y nunca coincidiría con la plata real.
+
+Cada movimiento tiene un **tipo**, y el tipo ya sabe para qué lado va la plata:
+
+| Entra | Sale | Depende |
+|---|---|---|
+| Cobro de venta · Otro ingreso · Aporte de plata | Gasto · Sueldo · Pago a proveedor · Retiro | Ajuste de caja |
+
+Los **sueldos** se cargan como un movimiento de tipo Sueldo con el nombre de la persona
+en *A quién*. Los **gastos** y los **pagos** llevan además un **rubro** (telas, alquiler,
+envíos, publicidad…), que es lo que después arma el bloque *En qué se fue*. El
+**Cobro de venta** se puede atar a una venta del panel: al elegirla se completan solos el
+monto, el concepto y el nombre de la clienta.
+
+El **traspaso entre cajas** tiene su propio botón porque escribe dos renglones a la vez
+—la salida de una caja y la entrada en la otra— y los guarda atados: borrar uno se lleva
+el otro, porque una pata suelta descuadraría las dos cajas. Los traspasos **no cuentan**
+en el *entró / salió / quedó* del mes: esa plata no entró ni salió, cambió de bolsillo.
+
+Los saldos de arriba se calculan siempre sobre todo lo cargado, aunque estés mirando un
+mes: el saldo de una caja es uno solo. Si no coincide con la plata real, se corrige con un
+movimiento de tipo **Ajuste de caja**, que es el único que deja elegir el lado.
+
+| Archivo | Qué hace |
+|---|---|
+| `supabase/economia.sql` | Tablas `cajas` y `movimientos` + las dos cajas iniciales + RLS |
+| `src/lib/economia.js` | Tipos, rubros, las cuentas de saldo y resumen, acceso a la base |
+| `src/admin/Economia.jsx` | La solapa del panel |
+
+Los montos se guardan **siempre positivos** y el signo lo pone la columna `direccion`: un
+gasto cargado con el monto en negativo sumaría en vez de restar. Todo es una sola tabla y
+no una por concepto (gastos, sueldos, pagos…) porque el saldo de una caja es la suma de
+sus renglones, y con cinco tablas habría que sumar cinco listas sin perder ninguna.
+
+Es lo más privado del proyecto —cuánto entra, cuánto se gasta, cuánto cobra cada
+persona—, así que `anon` no lee nada, ni siquiera los nombres de las cajas.
+
 ## Pendiente
 
 **Datos reales** (los actuales son de ejemplo, con fotos reales del portfolio):
@@ -272,8 +321,9 @@ Falta:
 
 1. Crear el proyecto en [supabase.com](https://supabase.com) (plan gratis).
 2. En el SQL Editor, correr en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
-   `supabase/ventas.sql`, `supabase/presupuestos.sql` y `supabase/pedidos-a-medida.sql`.
-   Los cinco son idempotentes: si se corren dos veces no rompen nada.
+   `supabase/ventas.sql`, `supabase/presupuestos.sql`, `supabase/pedidos-a-medida.sql` y
+   `supabase/economia.sql`. Los seis son idempotentes: si se corren dos veces no rompen
+   nada.
 3. En **Authentication > Providers**, desactivar el registro público y dar de alta
    a mano las cuentas que van a entrar al panel.
 4. Copiar `.env.example` a `.env.local` y completar la URL y la anon key.

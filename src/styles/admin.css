@@ -721,6 +721,139 @@
   opacity: 0.75;
 }
 
+/* --- Economía ------------------------------------------------------------- */
+
+/* Los saldos de cada caja, arriba de todo: es lo primero que se mira al entrar
+   («¿cuánta plata hay?»). La caja grande va en rojo lleno para distinguirla de
+   un vistazo de la chica. */
+.admin-saldos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.admin-saldo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-grande);
+}
+
+.admin-saldo[data-tipo='grande'] {
+  background: var(--rojo);
+  border-color: var(--rojo);
+  color: var(--crema);
+}
+
+.admin-saldo[data-inactiva='true'] {
+  opacity: 0.5;
+}
+
+.admin-saldo--total {
+  background: var(--crema-sombra);
+}
+
+.admin-saldo__nombre {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-saldo__monto {
+  font-family: var(--gotica);
+  font-size: 1.9rem;
+  line-height: 1.1;
+}
+
+/* Una caja en negativo tiene que saltar a la vista. Sobre el rojo de la caja
+   grande el rojo no se vería, así que ahí el aviso lo da el dorado. */
+.admin-saldo__monto[data-negativo='true'] {
+  color: var(--rojo);
+}
+
+.admin-saldo[data-tipo='grande'] .admin-saldo__monto[data-negativo='true'] {
+  color: var(--dorado);
+}
+
+.admin-saldo__pie {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* Selects de período (mes y caja), al lado uno del otro y sin estirarse a lo
+   ancho de la pantalla. */
+.admin-controles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.admin-controles .admin-campo {
+  min-width: 180px;
+}
+
+/* Entró / salió / quedó del período elegido. */
+.admin-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.admin-resumen__dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-left: 4px solid currentColor;
+  background: var(--crema-sombra);
+  border-radius: 0 var(--radio) var(--radio) 0;
+}
+
+.admin-resumen__dato[data-signo='entra'] {
+  color: #128c7e;
+}
+
+.admin-resumen__dato[data-signo='sale'] {
+  color: var(--rojo);
+}
+
+.admin-resumen__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-resumen__valor {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--tinta);
+}
+
+.admin-resumen__dato--resultado .admin-resumen__valor {
+  color: currentColor;
+}
+
+/* El signo del monto en la tabla: verde lo que entró, rojo lo que salió. */
+.admin-monto {
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.admin-monto[data-direccion='entra'] {
+  color: #128c7e;
+}
+
+.admin-monto[data-direccion='sale'] {
+  color: var(--rojo);
+}
+
 /* --- Responsive ----------------------------------------------------------- */
 
 @media (min-width: 720px) {
