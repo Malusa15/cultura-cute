@@ -784,6 +784,13 @@
   opacity: 0.7;
 }
 
+/* Cuando la barra lleva una explicación en vez de un título (la vista de
+   Cajas), el texto ocupa el hueco y el botón queda a la derecha. */
+.admin__barra .admin-ayuda {
+  flex: 1 1 320px;
+  margin-bottom: 0;
+}
+
 /* Selects de período (mes y caja), al lado uno del otro y sin estirarse a lo
    ancho de la pantalla. */
 .admin-controles {
