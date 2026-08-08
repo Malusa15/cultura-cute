@@ -91,6 +91,28 @@ create table if not exists movimientos (
   actualizado_en timestamptz not null default now()
 );
 
+-- ----------------------------------------------------------------------------
+-- Enganches con el resto del panel
+--
+-- Se agregan con `add column if not exists` y no en el `create table` de arriba
+-- a propósito: así volver a correr este mismo archivo alcanza para sumarlos a
+-- una base donde las tablas ya existían.
+--
+-- Sirven para saber qué plata ya quedó registrada y qué no: una seña de encargo
+-- o el costo de un envío se anotan en su solapa, y sin este vínculo Economía no
+-- tendría forma de distinguir "todavía no lo cargué" de "lo cargué dos veces".
+-- set null y no cascade: si se borra el encargo, la plata que entró no se borra.
+-- ----------------------------------------------------------------------------
+
+alter table movimientos
+  add column if not exists encargo_id uuid references encargos(id) on delete set null;
+
+alter table movimientos
+  add column if not exists envio_id uuid references envios(id) on delete set null;
+
+create index if not exists movimientos_encargo_idx on movimientos(encargo_id);
+create index if not exists movimientos_envio_idx   on movimientos(envio_id);
+
 create index if not exists movimientos_fecha_idx    on movimientos(fecha desc);
 create index if not exists movimientos_caja_idx     on movimientos(caja_id);
 create index if not exists movimientos_tipo_idx     on movimientos(tipo);

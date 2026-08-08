@@ -847,6 +847,147 @@
   color: currentColor;
 }
 
+/* Plata anotada en otras solapas que todavía no pasó por ninguna caja. Va con
+   borde rojo porque es lo único de la pantalla que pide una acción. */
+.admin-pendientes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  margin-bottom: 20px;
+  border: 1.5px solid var(--rojo);
+  border-radius: var(--radio-grande);
+  background: rgba(169, 23, 11, 0.05);
+}
+
+.admin-pendientes .admin-ayuda {
+  margin-bottom: 0;
+}
+
+.admin-pendientes__lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-pendientes__lista li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--borde);
+  font-size: 0.88rem;
+}
+
+.admin-pendientes__lista .admin-check {
+  align-items: flex-start;
+}
+
+.admin-pendientes__lista .admin-ayuda {
+  display: inline;
+}
+
+.admin-pendientes__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.admin-pendientes__pie .admin-campo {
+  min-width: 150px;
+}
+
+/* Bloques de análisis que se abren y cierran. Se usan <details> nativos: el
+   navegador ya sabe hacerlo y no hace falta estado en React. */
+.admin-desplegable {
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-grande);
+}
+
+.admin-desplegable > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.admin-desplegable > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* La flechita la ponemos nosotras para que gire con el bloque abierto. */
+.admin-desplegable > summary::after {
+  content: ' ▾';
+  font-family: var(--sans);
+  font-size: 0.9rem;
+}
+
+.admin-desplegable[open] > summary::after {
+  content: ' ▴';
+}
+
+.admin-desplegable > *:not(summary) {
+  margin-top: 14px;
+}
+
+/* Los últimos meses, uno debajo del otro, con las barras a la misma escala. */
+.admin-tira {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-tira__mes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.admin-tira__nombre {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.admin-tira__barras {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-tira__barra {
+  height: 9px;
+  border-radius: 999px;
+  /* Un mes en cero no puede desaparecer: se ve la rayita mínima. */
+  min-width: 2px;
+}
+
+.admin-tira__barra[data-direccion='entra'] {
+  background: #128c7e;
+}
+
+.admin-tira__barra[data-direccion='sale'] {
+  background: var(--rojo);
+}
+
+/* Barrita con el conteo y el link de exportar, arriba de la tabla. */
+.admin__barra--tabla {
+  margin-bottom: 8px;
+}
+
 /* El signo del monto en la tabla: verde lo que entró, rojo lo que salió. */
 .admin-monto {
   white-space: nowrap;
@@ -866,6 +1007,17 @@
 @media (min-width: 720px) {
   .admin-form__grilla {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* En pantalla ancha cada mes entra en una línea: nombre, barras y resultado. */
+  .admin-tira__mes {
+    grid-template-columns: 150px minmax(0, 1fr) 110px;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .admin-tira__mes .admin-monto {
+    text-align: right;
   }
 
   .admin-campo--ancho {

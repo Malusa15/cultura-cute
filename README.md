@@ -276,10 +276,49 @@ Los saldos de arriba se calculan siempre sobre todo lo cargado, aunque estés mi
 mes: el saldo de una caja es uno solo. Si no coincide con la plata real, se corrige con un
 movimiento de tipo **Ajuste de caja**, que es el único que deja elegir el lado.
 
+### Lo que evita cargar todo dos veces
+
+Una venta se cierra en su solapa, la seña se anota en el encargo y el costo del envío en el
+suyo. Sin nada que los una, Economía no se entera, y el agujero más grande de una caja no es
+un número mal puesto: es olvidarse de cargarlo.
+
+Por eso arriba de todo aparece **Plata que falta registrar**: lo que ya está anotado en otra
+solapa y todavía no pasó por ninguna caja. Se destilda lo que no corresponda y se cargan
+todas juntas en la caja que se elija. El vínculo (`venta_id`, `encargo_id`, `envio_id`) es lo
+que hace que después desaparezcan de la lista, así no se cargan dos veces.
+
+Los dos últimos los agrega la parte final de `economia.sql` con `add column if not exists`,
+o sea que **volver a correr el mismo archivo alcanza**. Hasta que se corra, la lista muestra
+solo las ventas y lo dice: `traerEconomia` pregunta por la columna antes de usarla y, si no
+está, ni la menciona en el insert — nombrar una columna inexistente haría fallar el guardado
+entero, y cargar un gasto no puede depender de un SQL que todavía no se corrió.
+
+### El resto de la solapa
+
+- **Repetir** en cada movimiento lo vuelve a cargar con la fecha corrida un mes, para los
+  gastos fijos (alquiler, internet, dominio). Si el día no existe en el mes destino se usa el
+  último: el 31 de enero cae el 28 de febrero.
+- **Cómo venís mes a mes**: los últimos seis meses con barras a la misma escala. Los meses
+  vacíos se muestran en cero en vez de saltarse; si desaparecieran, la seguidilla mentiría.
+- **Qué prendas se vendieron**: unidades y facturado por prenda. El costo sale del
+  presupuesto que tenga ese mismo nombre de prenda (comparado sin mayúsculas ni acentos),
+  que es el único lugar del panel donde se anota lo que cuesta hacer algo. Las prendas del
+  catálogo no tienen costo cargado en ninguna parte, así que de esas se ve lo que entró y no
+  lo que dejaron.
+- **Contar la caja**: se escribe cuánta plata hay de verdad y el panel arma solo el ajuste.
+  Si da justo no carga nada, en vez de un movimiento de cero pesos.
+- **Bajar a Excel**: CSV de lo que esté en pantalla, con `;` como separador y coma decimal
+  —que es lo que espera el Excel en castellano— y un BOM al principio para que no rompa los
+  acentos. El monto va con signo para poder sumar la columna derecho.
+
+Los montos se muestran con `plata()` y no con el `precio()` de la tienda: ese redondea al
+peso, y un gasto de $1.234,50 se veía "$1.235" mientras el saldo usaba el número exacto. Acá
+los centavos aparecen solo cuando existen.
+
 | Archivo | Qué hace |
 |---|---|
-| `supabase/economia.sql` | Tablas `cajas` y `movimientos` + las dos cajas iniciales + RLS |
-| `src/lib/economia.js` | Tipos, rubros, las cuentas de saldo y resumen, acceso a la base |
+| `supabase/economia.sql` | Tablas `cajas` y `movimientos`, las dos cajas iniciales, los enganches y RLS |
+| `src/lib/economia.js` | Tipos, rubros, las cuentas, los pendientes, el CSV y el acceso a la base |
 | `src/admin/Economia.jsx` | La solapa del panel |
 
 Los montos se guardan **siempre positivos** y el signo lo pone la columna `direccion`: un

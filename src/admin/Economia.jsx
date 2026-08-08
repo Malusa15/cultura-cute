@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   ETIQUETAS_TIPO,
   METODOS_PAGO,
@@ -6,6 +6,9 @@ import {
   TIPOS_A_MANO,
   TIPOS_CAJA,
   TIPOS_MOVIMIENTO,
+  ajusteDeArqueo,
+  armarCsv,
+  descargarCsv,
   direccionDe,
   eliminarCaja,
   eliminarMovimiento,
@@ -16,18 +19,31 @@ import {
   mesDe,
   mesesDe,
   nombreDeMes,
+  pendientes,
+  plata,
+  porPrenda,
+  proximoMes,
+  registrarPendientes,
   registrarTraspaso,
   resumen,
   saldoDeCaja,
-  saldoTotal,
   traerEconomia,
+  ultimosMeses,
 } from '../lib/economia.js'
-import { fecha, precio } from '../lib/formato.js'
+import { fecha } from '../lib/formato.js'
 import { BotonEliminar, Vacio, useLista } from './comunes.jsx'
 
 // Lo que se muestra mientras carga. Sin esto habría que preguntar por cada lista
 // antes de usarla, en una pantalla que las cruza todo el tiempo.
-const SIN_DATOS = { cajas: [], movimientos: [], ventas: [] }
+const SIN_DATOS = {
+  cajas: [],
+  movimientos: [],
+  ventas: [],
+  encargos: [],
+  envios: [],
+  presupuestos: [],
+  enlaces: false,
+}
 
 // Los formularios vacíos son funciones y no constantes porque llevan la fecha de
 // hoy: si fueran constantes, el panel abierto desde ayer propondría ayer.
@@ -44,6 +60,8 @@ const movimientoVacio = (caja_id) => ({
   persona: '',
   comprobante: '',
   venta_id: '',
+  encargo_id: '',
+  envio_id: '',
   notas: '',
 })
 
@@ -55,6 +73,8 @@ const traspasoVacio = (origen_id, destino_id) => ({
   metodo: 'efectivo',
   notas: '',
 })
+
+const arqueoVacio = (caja_id) => ({ caja_id, fecha: hoy(), contado: '' })
 
 const CAJA_VACIA = {
   id: null,
@@ -78,18 +98,11 @@ const FILTROS = [
   { id: 'traspaso', label: 'Traspasos', pasa: (m) => m.tipo === 'traspaso' },
 ]
 
-// precio() pone el símbolo adelante, así que un saldo negativo quedaría
-// "$-6.700". Acá los saldos y el resultado del mes pueden dar en rojo, y el
-// menos se lee mucho mejor antes del peso.
-function conSigno(valor) {
-  return `${valor < 0 ? '− ' : ''}${precio(Math.abs(valor))}`
-}
-
 // El signo lo pone la dirección: los montos se guardan siempre positivos.
 function Monto({ movimiento }) {
   return (
     <span className="admin-monto" data-direccion={movimiento.direccion}>
-      {movimiento.direccion === 'entra' ? '+' : '−'} {precio(movimiento.monto)}
+      {movimiento.direccion === 'entra' ? '+' : '−'} {plata(movimiento.monto)}
     </span>
   )
 }
@@ -103,18 +116,21 @@ function paraEditar(m) {
     persona: m.persona ?? '',
     comprobante: m.comprobante ?? '',
     venta_id: m.venta_id ?? '',
+    encargo_id: m.encargo_id ?? '',
+    envio_id: m.envio_id ?? '',
     notas: m.notas ?? '',
   }
 }
 
 export default function Economia() {
   const { datos, cargando, error, setError, correr } = useLista(traerEconomia, SIN_DATOS)
-  const { cajas, movimientos, ventas } = datos
+  const { cajas, movimientos, ventas, encargos, envios, presupuestos, enlaces } = datos
 
   // Una sola puerta a la vez: null es la lista, y cada valor es un formulario.
   const [vista, setVista] = useState(null)
   const [form, setForm] = useState(null)
   const [traspaso, setTraspaso] = useState(null)
+  const [arqueo, setArqueo] = useState(null)
   const [formCaja, setFormCaja] = useState(null)
   const [confirmando, setConfirmando] = useState(null)
 
@@ -122,19 +138,52 @@ export default function Economia() {
   const [caja, setCaja] = useState('todas')
   const [filtro, setFiltro] = useState('todos')
 
+  // Qué pendientes están tildados y dónde se van a cargar.
+  const [desmarcados, setDesmarcados] = useState(() => new Set())
+  const [cajaPendientes, setCajaPendientes] = useState('')
+  const [metodoPendientes, setMetodoPendientes] = useState('efectivo')
+
   const activas = cajas.filter((c) => c.activa)
-  const meses = mesesDe(movimientos)
 
-  // Los saldos salen de la lista completa; el resto de la pantalla mira el
-  // período elegido.
-  const total = saldoTotal(cajas, movimientos)
+  // Todo lo que se recalcula recorriendo la lista entera va memorizado: si no,
+  // cada tecla en un formulario vuelve a sumar todos los movimientos de todas
+  // las cajas para redibujar los saldos que ni siquiera cambiaron.
+  const saldos = useMemo(
+    () => new Map(cajas.map((c) => [c.id, saldoDeCaja(c, movimientos)])),
+    [cajas, movimientos],
+  )
+  const saldoDe = (id) => saldos.get(id) ?? 0
+  const total = useMemo(() => [...saldos.values()].reduce((s, v) => s + v, 0), [saldos])
 
-  const delMes = mes === 'todos' ? movimientos : movimientos.filter((m) => mesDe(m.fecha) === mes)
-  const periodo = caja === 'todas' ? delMes : delMes.filter((m) => m.caja_id === caja)
-  const cuenta = resumen(periodo)
+  const meses = useMemo(() => mesesDe(movimientos), [movimientos])
+
+  // Primero la caja y después el mes: la tira de meses necesita la lista
+  // filtrada por caja pero sin filtrar por mes.
+  const porCaja = useMemo(
+    () => (caja === 'todas' ? movimientos : movimientos.filter((m) => m.caja_id === caja)),
+    [movimientos, caja],
+  )
+  const periodo = useMemo(
+    () => (mes === 'todos' ? porCaja : porCaja.filter((m) => mesDe(m.fecha) === mes)),
+    [porCaja, mes],
+  )
+
+  const cuenta = useMemo(() => resumen(periodo), [periodo])
+  const tira = useMemo(
+    () => ultimosMeses(porCaja, 6, mes === 'todos' ? mesActual() : mes),
+    [porCaja, mes],
+  )
+  const prendas = useMemo(() => porPrenda(ventas, presupuestos, mes), [ventas, presupuestos, mes])
+
+  const sinCargar = useMemo(
+    () => pendientes({ movimientos, ventas, encargos, envios, enlaces }),
+    [movimientos, ventas, encargos, envios, enlaces],
+  )
+  const clave = (p) => `${p.clase}:${p.id}`
+  const elegidos = sinCargar.filter((p) => !desmarcados.has(clave(p)))
 
   const elegido = FILTROS.find((f) => f.id === filtro) ?? FILTROS[0]
-  const visibles = periodo.filter(elegido.pasa)
+  const visibles = useMemo(() => periodo.filter(elegido.pasa), [periodo, elegido])
 
   // La caja que se propone por defecto: la chica, que es donde cae casi todo.
   const cajaPorDefecto = () => activas.find((c) => c.tipo === 'chica')?.id ?? activas[0]?.id ?? ''
@@ -143,6 +192,7 @@ export default function Economia() {
     setVista(null)
     setForm(null)
     setTraspaso(null)
+    setArqueo(null)
     setFormCaja(null)
     setError(null)
   }
@@ -150,6 +200,22 @@ export default function Economia() {
   const abrirMovimiento = (movimiento) => {
     setError(null)
     setForm(movimiento ? paraEditar(movimiento) : movimientoVacio(cajaPorDefecto()))
+    setVista('movimiento')
+  }
+
+  // Repetir un gasto fijo: los mismos datos con la fecha corrida un mes y sin
+  // id, así se guarda como uno nuevo en vez de pisar el del mes pasado.
+  const repetir = (movimiento) => {
+    setError(null)
+    setForm({
+      ...paraEditar(movimiento),
+      id: null,
+      fecha: proximoMes(movimiento.fecha),
+      // El vínculo no se copia: el cobro de la venta #14 pasa una sola vez.
+      venta_id: '',
+      encargo_id: '',
+      envio_id: '',
+    })
     setVista('movimiento')
   }
 
@@ -161,8 +227,15 @@ export default function Economia() {
     setVista('traspaso')
   }
 
+  const abrirArqueo = () => {
+    setError(null)
+    setArqueo(arqueoVacio(cajaPorDefecto()))
+    setVista('arqueo')
+  }
+
   const campo = (nombre) => (e) => setForm((f) => ({ ...f, [nombre]: e.target.value }))
   const campoTraspaso = (nombre) => (e) => setTraspaso((t) => ({ ...t, [nombre]: e.target.value }))
+  const campoArqueo = (nombre) => (e) => setArqueo((a) => ({ ...a, [nombre]: e.target.value }))
   const campoCaja = (nombre) => (e) => setFormCaja((c) => ({ ...c, [nombre]: e.target.value }))
 
   // Cambiar el tipo reacomoda la dirección: un gasto sale y un aporte entra, no
@@ -210,7 +283,7 @@ export default function Economia() {
       return
     }
     correr(async () => {
-      await guardarMovimiento(form)
+      await guardarMovimiento(form, enlaces)
       mostrar(form.fecha, form.caja_id)
       cerrar()
     })
@@ -234,6 +307,47 @@ export default function Economia() {
     })
   }
 
+  const diferenciaArqueo =
+    arqueo && String(arqueo.contado).trim() !== ''
+      ? Number(arqueo.contado) - saldoDe(arqueo.caja_id)
+      : null
+
+  const enviarArqueo = (e) => {
+    e.preventDefault()
+    if (!arqueo.caja_id) {
+      setError('Hay que elegir qué caja contaste.')
+      return
+    }
+    if (String(arqueo.contado).trim() === '') {
+      setError('Falta cuánta plata contaste.')
+      return
+    }
+
+    const ajuste = ajusteDeArqueo({
+      caja_id: arqueo.caja_id,
+      contado: arqueo.contado,
+      saldoActual: saldoDe(arqueo.caja_id),
+      fecha: arqueo.fecha,
+    })
+
+    if (!ajuste) {
+      setError('La caja da justo: no hace falta ningún ajuste.')
+      return
+    }
+
+    correr(async () => {
+      await guardarMovimiento(ajuste, enlaces)
+      mostrar(ajuste.fecha, ajuste.caja_id)
+      cerrar()
+    })
+  }
+
+  const cargarPendientes = () =>
+    correr(async () => {
+      await registrarPendientes(elegidos, cajaPendientes || cajaPorDefecto(), metodoPendientes, enlaces)
+      setDesmarcados(new Set())
+    })
+
   const enviarCaja = (e) => {
     e.preventDefault()
     if (!formCaja.nombre.trim()) {
@@ -246,10 +360,13 @@ export default function Economia() {
     })
   }
 
-  const saldoDe = (id) => {
-    const c = cajas.find((x) => x.id === id)
-    return c ? saldoDeCaja(c, movimientos) : 0
+  const exportar = () => {
+    const sufijo = mes === 'todos' ? 'todo' : mes
+    descargarCsv(armarCsv(visibles, cajas), `economia-${sufijo}.csv`)
   }
+
+  // Para que las barras de los últimos meses sean comparables entre sí.
+  const topeTira = Math.max(1, ...tira.map((t) => Math.max(t.entradas, t.salidas)))
 
   return (
     <>
@@ -262,7 +379,10 @@ export default function Economia() {
               Nuevo movimiento
             </button>
             <button type="button" className="boton boton--fantasma" onClick={abrirTraspaso}>
-              Traspaso entre cajas
+              Traspaso
+            </button>
+            <button type="button" className="boton boton--fantasma" onClick={abrirArqueo}>
+              Contar la caja
             </button>
             <button
               type="button"
@@ -281,38 +401,129 @@ export default function Economia() {
       {error && <p className="admin-error">{error}</p>}
 
       {/* ------------------------------------------------------------------ */}
-      {/* Lista: saldos, resumen del período y la tabla de movimientos.      */}
+      {/* Lista: saldos, pendientes, resumen y la tabla de movimientos.      */}
       {/* ------------------------------------------------------------------ */}
 
       {vista === null && (
         <>
           <div className="admin-saldos">
-            {cajas.map((c) => {
-              const suyo = saldoDeCaja(c, movimientos)
-              return (
-                <div key={c.id} className="admin-saldo" data-tipo={c.tipo} data-inactiva={!c.activa}>
-                  <span className="admin-saldo__nombre">{c.nombre}</span>
-                  <span className="admin-saldo__monto" data-negativo={suyo < 0}>
-                    {conSigno(suyo)}
-                  </span>
-                  <span className="admin-saldo__pie">
-                    {TIPOS_CAJA[c.tipo]}
-                    {!c.activa && ' · guardada'}
-                  </span>
-                </div>
-              )
-            })}
+            {cajas.map((c) => (
+              <div key={c.id} className="admin-saldo" data-tipo={c.tipo} data-inactiva={!c.activa}>
+                <span className="admin-saldo__nombre">{c.nombre}</span>
+                <span className="admin-saldo__monto" data-negativo={saldoDe(c.id) < 0}>
+                  {plata(saldoDe(c.id))}
+                </span>
+                <span className="admin-saldo__pie">
+                  {TIPOS_CAJA[c.tipo]}
+                  {!c.activa && ' · guardada'}
+                </span>
+              </div>
+            ))}
 
             {cajas.length > 1 && (
               <div className="admin-saldo admin-saldo--total">
                 <span className="admin-saldo__nombre">Todo junto</span>
                 <span className="admin-saldo__monto" data-negativo={total < 0}>
-                  {conSigno(total)}
+                  {plata(total)}
                 </span>
                 <span className="admin-saldo__pie">Suma de las cajas</span>
               </div>
             )}
           </div>
+
+          {/* --- Plata anotada en otras solapas que todavía no tiene caja --- */}
+          {sinCargar.length > 0 && (
+            <div className="admin-pendientes">
+              <h3 className="admin-bloque__titulo">Plata que falta registrar</h3>
+              <p className="admin-ayuda">
+                Esto ya está anotado en otras solapas —ventas cerradas, señas de encargos, costos de
+                envío— pero todavía no entró ni salió de ninguna caja. Destildá lo que no quieras
+                cargar todavía.
+              </p>
+
+              <ul className="admin-pendientes__lista">
+                {sinCargar.map((p) => {
+                  const k = clave(p)
+                  return (
+                    <li key={k}>
+                      <label className="admin-check">
+                        <input
+                          type="checkbox"
+                          checked={!desmarcados.has(k)}
+                          onChange={(e) =>
+                            setDesmarcados((s) => {
+                              const nuevo = new Set(s)
+                              if (e.target.checked) nuevo.delete(k)
+                              else nuevo.add(k)
+                              return nuevo
+                            })
+                          }
+                        />
+                        <span>
+                          <strong>{p.etiqueta}</strong>
+                          {p.detalle && ` · ${p.detalle}`}
+                          <span className="admin-ayuda"> {fecha(p.fecha)}</span>
+                        </span>
+                      </label>
+                      <span className="admin-monto" data-direccion={p.direccion}>
+                        {p.direccion === 'entra' ? '+' : '−'} {plata(p.monto)}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+
+              <div className="admin-pendientes__pie">
+                <label className="admin-campo">
+                  <span className="admin-campo__label">En qué caja</span>
+                  <select
+                    className="admin-campo__control"
+                    value={cajaPendientes || cajaPorDefecto()}
+                    onChange={(e) => setCajaPendientes(e.target.value)}
+                  >
+                    {activas.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="admin-campo">
+                  <span className="admin-campo__label">Cómo se pagó</span>
+                  <select
+                    className="admin-campo__control"
+                    value={metodoPendientes}
+                    onChange={(e) => setMetodoPendientes(e.target.value)}
+                  >
+                    {Object.entries(METODOS_PAGO).map(([k, texto]) => (
+                      <option key={k} value={k}>
+                        {texto}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <button
+                  type="button"
+                  className="boton"
+                  disabled={elegidos.length === 0}
+                  onClick={cargarPendientes}
+                >
+                  Cargar {elegidos.length === 1 ? 'el elegido' : `los ${elegidos.length} elegidos`}
+                </button>
+              </div>
+
+              {!enlaces && (
+                <p className="admin-ayuda">
+                  Por ahora solo se listan las ventas. Para que aparezcan también las señas de los
+                  encargos y los costos de envío hay que volver a correr{' '}
+                  <code>supabase/economia.sql</code> en Supabase: la última parte del archivo agrega
+                  lo que hace falta para no cargar dos veces lo mismo.
+                </p>
+              )}
+            </div>
+          )}
 
           <p className="admin-ayuda">
             Cada vez que entra o sale plata se carga un movimiento en una caja. La{' '}
@@ -359,18 +570,18 @@ export default function Economia() {
           <div className="admin-resumen">
             <div className="admin-resumen__dato" data-signo="entra">
               <span className="admin-resumen__label">Entró</span>
-              <span className="admin-resumen__valor">{precio(cuenta.entradas)}</span>
+              <span className="admin-resumen__valor">{plata(cuenta.entradas)}</span>
             </div>
             <div className="admin-resumen__dato" data-signo="sale">
               <span className="admin-resumen__label">Salió</span>
-              <span className="admin-resumen__valor">{precio(cuenta.salidas)}</span>
+              <span className="admin-resumen__valor">{plata(cuenta.salidas)}</span>
             </div>
             <div
               className="admin-resumen__dato admin-resumen__dato--resultado"
               data-signo={cuenta.resultado < 0 ? 'sale' : 'entra'}
             >
               <span className="admin-resumen__label">Quedó</span>
-              <span className="admin-resumen__valor">{conSigno(cuenta.resultado)}</span>
+              <span className="admin-resumen__valor">{plata(cuenta.resultado)}</span>
             </div>
           </div>
 
@@ -380,19 +591,108 @@ export default function Economia() {
             entre cajas no cuentan acá: esa plata no entró ni salió, cambió de bolsillo.
           </p>
 
+          {/* --- Los tres bloques de análisis, cerrados salvo el primero --- */}
+
           {cuenta.porRubro.length > 0 && (
-            <div className="admin-bloque">
-              <h3 className="admin-bloque__titulo">En qué se fue</h3>
+            <details className="admin-desplegable" open>
+              <summary className="admin-bloque__titulo">En qué se fue</summary>
               <ul className="admin-cuenta">
                 {cuenta.porRubro.map(([rubro, monto]) => (
                   <li key={rubro}>
                     <span>{RUBROS[rubro] ?? rubro}</span>
-                    <span>{precio(monto)}</span>
+                    <span>{plata(monto)}</span>
                   </li>
                 ))}
               </ul>
-            </div>
+            </details>
           )}
+
+          <details className="admin-desplegable">
+            <summary className="admin-bloque__titulo">Cómo venís mes a mes</summary>
+            <p className="admin-ayuda">
+              Los últimos seis meses hasta el que estás mirando. Las barras están a la misma escala,
+              así que se comparan entre sí.
+            </p>
+            <ul className="admin-tira">
+              {tira.map((t) => (
+                <li key={t.mes} className="admin-tira__mes">
+                  <span className="admin-tira__nombre">{nombreDeMes(t.mes)}</span>
+                  <span className="admin-tira__barras">
+                    <span
+                      className="admin-tira__barra"
+                      data-direccion="entra"
+                      style={{ width: `${(t.entradas / topeTira) * 100}%` }}
+                    />
+                    <span
+                      className="admin-tira__barra"
+                      data-direccion="sale"
+                      style={{ width: `${(t.salidas / topeTira) * 100}%` }}
+                    />
+                  </span>
+                  <span className="admin-monto" data-direccion={t.resultado < 0 ? 'sale' : 'entra'}>
+                    {plata(t.resultado)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+
+          <details className="admin-desplegable">
+            <summary className="admin-bloque__titulo">Qué prendas se vendieron</summary>
+            <p className="admin-ayuda">
+              Las ventas confirmadas y entregadas del mes elegido (esto no mira el filtro de caja: es
+              sobre las ventas, no sobre dónde entró la plata). El <strong>costo</strong> aparece solo
+              cuando hay un presupuesto con ese mismo nombre de prenda, que es el único lugar donde
+              hoy se anota lo que cuesta hacerla. Las prendas del catálogo no tienen costo cargado en
+              ninguna parte, así que de esas se ve lo que entró, no lo que dejaron.
+            </p>
+
+            {prendas.length === 0 ? (
+              <Vacio>No hay ventas cerradas en ese período.</Vacio>
+            ) : (
+              <div className="admin-tabla__scroll">
+                <table className="admin-tabla">
+                  <thead>
+                    <tr>
+                      <th>Prenda</th>
+                      <th>Unidades</th>
+                      <th>Facturado</th>
+                      <th>Costo</th>
+                      <th>Deja</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prendas.map((p) => (
+                      <tr key={p.nombre}>
+                        <td>{p.nombre}</td>
+                        <td>{p.unidades}</td>
+                        <td>{plata(p.facturado)}</td>
+                        <td>
+                          {p.costo == null ? (
+                            <span className="admin-ayuda">sin costo cargado</span>
+                          ) : (
+                            plata(p.costo)
+                          )}
+                        </td>
+                        <td>
+                          {p.margen == null ? (
+                            <span className="admin-ayuda">—</span>
+                          ) : (
+                            <span
+                              className="admin-monto"
+                              data-direccion={p.margen < 0 ? 'sale' : 'entra'}
+                            >
+                              {plata(p.margen)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </details>
 
           <div className="admin-filtros" role="group" aria-label="Filtrar movimientos">
             {FILTROS.map((f) => (
@@ -418,71 +718,92 @@ export default function Economia() {
                 : 'No hay movimientos con esos filtros.'}
             </Vacio>
           ) : (
-            <div className="admin-tabla__scroll">
-              <table className="admin-tabla">
-                <thead>
-                  <tr>
-                    <th>N°</th>
-                    <th>Fecha</th>
-                    <th>Concepto</th>
-                    <th>Tipo</th>
-                    <th>Rubro</th>
-                    <th>Caja</th>
-                    <th>Cómo</th>
-                    <th>Monto</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibles.map((m) => (
-                    <tr key={m.id} data-inactivo={m.tipo === 'traspaso'}>
-                      <td>#{m.numero}</td>
-                      <td>{fecha(m.fecha)}</td>
-                      <td>
-                        {m.concepto}
-                        {m.persona && <div className="admin-ayuda">{m.persona}</div>}
-                        {m.venta && <div className="admin-ayuda">Venta #{m.venta.numero}</div>}
-                        {m.comprobante && (
-                          <div className="admin-ayuda">Comprobante {m.comprobante}</div>
-                        )}
-                      </td>
-                      <td>{ETIQUETAS_TIPO[m.tipo] ?? m.tipo}</td>
-                      <td>{m.rubro ? RUBROS[m.rubro] ?? m.rubro : '—'}</td>
-                      <td>{m.caja?.nombre ?? '—'}</td>
-                      <td>{METODOS_PAGO[m.metodo] ?? m.metodo}</td>
-                      <td>
-                        <Monto movimiento={m} />
-                      </td>
-                      <td>
-                        <div className="admin-tabla__acciones">
-                          {/* Un traspaso son dos renglones atados: editar uno
-                              solo descuadraría las dos cajas. Se borra y se
-                              vuelve a hacer. */}
-                          {m.tipo !== 'traspaso' && (
-                            <button
-                              type="button"
-                              className="admin__link"
-                              onClick={() => abrirMovimiento(m)}
-                            >
-                              Editar
-                            </button>
-                          )}
-                          <BotonEliminar
-                            activo={confirmando === m.id}
-                            alPedir={() => setConfirmando(m.id)}
-                            alCancelar={() => setConfirmando(null)}
-                            alConfirmar={() => {
-                              correr(() => eliminarMovimiento(m))
-                              setConfirmando(null)
-                            }}
-                          />
-                        </div>
-                      </td>
+            <>
+              <div className="admin__barra admin__barra--tabla">
+                <p className="admin-ayuda">
+                  {visibles.length} {visibles.length === 1 ? 'movimiento' : 'movimientos'} en pantalla.
+                </p>
+                <button type="button" className="admin__link" onClick={exportar}>
+                  Bajar a Excel (CSV)
+                </button>
+              </div>
+
+              <div className="admin-tabla__scroll">
+                <table className="admin-tabla">
+                  <thead>
+                    <tr>
+                      <th>N°</th>
+                      <th>Fecha</th>
+                      <th>Concepto</th>
+                      <th>Tipo</th>
+                      <th>Rubro</th>
+                      <th>Caja</th>
+                      <th>Cómo</th>
+                      <th>Monto</th>
+                      <th>Acciones</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {visibles.map((m) => (
+                      <tr key={m.id} data-inactivo={m.tipo === 'traspaso'}>
+                        <td>#{m.numero}</td>
+                        <td>{fecha(m.fecha)}</td>
+                        <td>
+                          {m.concepto}
+                          {m.persona && <div className="admin-ayuda">{m.persona}</div>}
+                          {m.venta && <div className="admin-ayuda">Venta #{m.venta.numero}</div>}
+                          {m.comprobante && (
+                            <div className="admin-ayuda">Comprobante {m.comprobante}</div>
+                          )}
+                        </td>
+                        <td>{ETIQUETAS_TIPO[m.tipo] ?? m.tipo}</td>
+                        <td>{m.rubro ? RUBROS[m.rubro] ?? m.rubro : '—'}</td>
+                        <td>{m.caja?.nombre ?? '—'}</td>
+                        <td>{METODOS_PAGO[m.metodo] ?? m.metodo}</td>
+                        <td>
+                          <Monto movimiento={m} />
+                        </td>
+                        <td>
+                          <div className="admin-tabla__acciones">
+                            {/* Un traspaso son dos renglones atados: editar uno
+                                solo descuadraría las dos cajas. Se borra y se
+                                vuelve a hacer. */}
+                            {m.tipo !== 'traspaso' && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="admin__link"
+                                  onClick={() => abrirMovimiento(m)}
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  type="button"
+                                  className="admin__link"
+                                  title="Cargarlo de nuevo con la fecha del mes que viene"
+                                  onClick={() => repetir(m)}
+                                >
+                                  Repetir
+                                </button>
+                              </>
+                            )}
+                            <BotonEliminar
+                              activo={confirmando === m.id}
+                              alPedir={() => setConfirmando(m.id)}
+                              alCancelar={() => setConfirmando(null)}
+                              alConfirmar={() => {
+                                correr(() => eliminarMovimiento(m))
+                                setConfirmando(null)
+                              }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </>
       )}
@@ -508,8 +829,8 @@ export default function Economia() {
             <label className="admin-campo">
               <span className="admin-campo__label">Qué es</span>
               <select className="admin-campo__control" value={form.tipo} onChange={cambiarTipo}>
-                {Object.entries(TIPOS_A_MANO).map(([clave, texto]) => (
-                  <option key={clave} value={clave}>
+                {Object.entries(TIPOS_A_MANO).map(([clv, texto]) => (
+                  <option key={clv} value={clv}>
                     {texto}
                   </option>
                 ))}
@@ -543,7 +864,7 @@ export default function Economia() {
                 <option value="">Elegir…</option>
                 {cajas.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.nombre} · {conSigno(saldoDeCaja(c, movimientos))}
+                    {c.nombre} · {plata(saldoDe(c.id))}
                   </option>
                 ))}
               </select>
@@ -565,15 +886,11 @@ export default function Economia() {
             {form.tipo === 'venta' && (
               <label className="admin-campo">
                 <span className="admin-campo__label">Venta que se cobra</span>
-                <select
-                  className="admin-campo__control"
-                  value={form.venta_id}
-                  onChange={elegirVenta}
-                >
+                <select className="admin-campo__control" value={form.venta_id} onChange={elegirVenta}>
                   <option value="">Sin atar a una venta</option>
                   {ventas.map((v) => (
                     <option key={v.id} value={v.id}>
-                      #{v.numero} · {v.cliente_nombre ?? 'Sin nombre'} · {precio(v.total)}
+                      #{v.numero} · {v.cliente_nombre ?? 'Sin nombre'} · {plata(v.total)}
                     </option>
                   ))}
                 </select>
@@ -595,8 +912,8 @@ export default function Economia() {
               <span className="admin-campo__label">Rubro</span>
               <select className="admin-campo__control" value={form.rubro} onChange={campo('rubro')}>
                 <option value="">Sin rubro</option>
-                {Object.entries(RUBROS).map(([clave, texto]) => (
-                  <option key={clave} value={clave}>
+                {Object.entries(RUBROS).map(([clv, texto]) => (
+                  <option key={clv} value={clv}>
                     {texto}
                   </option>
                 ))}
@@ -605,13 +922,9 @@ export default function Economia() {
 
             <label className="admin-campo">
               <span className="admin-campo__label">Cómo se pagó</span>
-              <select
-                className="admin-campo__control"
-                value={form.metodo}
-                onChange={campo('metodo')}
-              >
-                {Object.entries(METODOS_PAGO).map(([clave, texto]) => (
-                  <option key={clave} value={clave}>
+              <select className="admin-campo__control" value={form.metodo} onChange={campo('metodo')}>
+                {Object.entries(METODOS_PAGO).map(([clv, texto]) => (
+                  <option key={clv} value={clv}>
                     {texto}
                   </option>
                 ))}
@@ -699,7 +1012,7 @@ export default function Economia() {
                 <option value="">Elegir…</option>
                 {activas.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.nombre} · {conSigno(saldoDeCaja(c, movimientos))}
+                    {c.nombre} · {plata(saldoDe(c.id))}
                   </option>
                 ))}
               </select>
@@ -716,7 +1029,7 @@ export default function Economia() {
                 <option value="">Elegir…</option>
                 {activas.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.nombre} · {conSigno(saldoDeCaja(c, movimientos))}
+                    {c.nombre} · {plata(saldoDe(c.id))}
                   </option>
                 ))}
               </select>
@@ -742,8 +1055,8 @@ export default function Economia() {
                 value={traspaso.metodo}
                 onChange={campoTraspaso('metodo')}
               >
-                {Object.entries(METODOS_PAGO).map(([clave, texto]) => (
-                  <option key={clave} value={clave}>
+                {Object.entries(METODOS_PAGO).map(([clv, texto]) => (
+                  <option key={clv} value={clv}>
                     {texto}
                   </option>
                 ))}
@@ -783,6 +1096,101 @@ export default function Economia() {
       )}
 
       {/* ------------------------------------------------------------------ */}
+      {/* Arqueo: contar la caja                                             */}
+      {/* ------------------------------------------------------------------ */}
+
+      {vista === 'arqueo' && arqueo && (
+        <form className="admin-form" onSubmit={enviarArqueo}>
+          <p className="admin-ayuda">
+            Contás la plata que hay de verdad, escribís cuánto es, y el panel arma solo el ajuste que
+            falta para que el saldo diga lo mismo. No hace falta que saques la cuenta de la
+            diferencia.
+          </p>
+
+          <div className="admin-form__grilla">
+            <label className="admin-campo">
+              <span className="admin-campo__label">Qué caja contaste</span>
+              <select
+                className="admin-campo__control"
+                value={arqueo.caja_id}
+                onChange={campoArqueo('caja_id')}
+                required
+              >
+                <option value="">Elegir…</option>
+                {activas.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="admin-campo">
+              <span className="admin-campo__label">Fecha</span>
+              <input
+                className="admin-campo__control"
+                type="date"
+                value={arqueo.fecha}
+                onChange={campoArqueo('fecha')}
+                required
+              />
+            </label>
+
+            <label className="admin-campo">
+              <span className="admin-campo__label">Cuánto contaste (ARS)</span>
+              <input
+                className="admin-campo__control"
+                type="number"
+                min="0"
+                step="100"
+                value={arqueo.contado}
+                onChange={campoArqueo('contado')}
+                required
+              />
+            </label>
+          </div>
+
+          <ul className="admin-cuenta">
+            <li>
+              <span>Dice el panel</span>
+              <span>{plata(saldoDe(arqueo.caja_id))}</span>
+            </li>
+            <li>
+              <span>Contaste</span>
+              <span>
+                {String(arqueo.contado).trim() === '' ? '—' : plata(Number(arqueo.contado))}
+              </span>
+            </li>
+            <li className="admin-cuenta__total">
+              <span>Diferencia</span>
+              <span>{diferenciaArqueo == null ? '—' : plata(diferenciaArqueo)}</span>
+            </li>
+          </ul>
+
+          {diferenciaArqueo !== null && (
+            <p className="admin-ayuda">
+              {diferenciaArqueo === 0
+                ? 'La caja da justo: no hace falta ningún ajuste.'
+                : diferenciaArqueo > 0
+                  ? 'Hay más plata de la que dice el panel. Se va a cargar un ajuste que suma la diferencia.'
+                  : 'Falta plata contra lo que dice el panel. Se va a cargar un ajuste que la resta.'}
+            </p>
+          )}
+
+          <div className="admin-form__pie">
+            <div className="admin-form__botones">
+              <button type="button" className="boton boton--fantasma" onClick={cerrar}>
+                Cancelar
+              </button>
+              <button type="submit" className="boton" disabled={diferenciaArqueo === 0}>
+                Cargar el ajuste
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
       {/* Cajas                                                              */}
       {/* ------------------------------------------------------------------ */}
 
@@ -791,8 +1199,8 @@ export default function Economia() {
           <div className="admin__barra">
             <p className="admin-ayuda">
               El <strong>saldo inicial</strong> es lo que había adentro el día que se empezó a
-              anotar. Si el saldo que muestra el panel no coincide con la plata real, se corrige
-              ahí o con un movimiento de tipo «Ajuste de caja».
+              anotar. Si el saldo que muestra el panel no coincide con la plata real, se corrige ahí
+              o con «Contar la caja».
             </p>
             {!formCaja && (
               <button
@@ -828,8 +1236,8 @@ export default function Economia() {
                     value={formCaja.tipo}
                     onChange={campoCaja('tipo')}
                   >
-                    {Object.entries(TIPOS_CAJA).map(([clave, texto]) => (
-                      <option key={clave} value={clave}>
+                    {Object.entries(TIPOS_CAJA).map(([clv, texto]) => (
+                      <option key={clv} value={clv}>
                         {texto}
                       </option>
                     ))}
@@ -917,10 +1325,10 @@ export default function Economia() {
                           {c.notas && <div className="admin-ayuda">{c.notas}</div>}
                         </td>
                         <td>{TIPOS_CAJA[c.tipo]}</td>
-                        <td>{precio(c.saldo_inicial)}</td>
+                        <td>{plata(c.saldo_inicial)}</td>
                         <td>{movimientos.filter((m) => m.caja_id === c.id).length}</td>
                         <td>
-                          <strong>{conSigno(saldoDeCaja(c, movimientos))}</strong>
+                          <strong>{plata(saldoDe(c.id))}</strong>
                         </td>
                         <td>
                           <div className="admin-tabla__acciones">
