@@ -186,6 +186,15 @@ export default function Economia() {
     }))
   }
 
+  // Después de guardar, correr los filtros hasta donde quedó lo que se acaba de
+  // cargar. Si no, un gasto con fecha del mes pasado se guarda bien pero no
+  // aparece en pantalla, y parece que no se guardó.
+  const mostrar = (fechaGuardada, cajaGuardada) => {
+    setFiltro('todos')
+    if (mes !== 'todos') setMes(mesDe(fechaGuardada))
+    if (caja !== 'todas' && caja !== cajaGuardada) setCaja('todas')
+  }
+
   const enviarMovimiento = (e) => {
     e.preventDefault()
     if (!form.caja_id) {
@@ -202,6 +211,7 @@ export default function Economia() {
     }
     correr(async () => {
       await guardarMovimiento(form)
+      mostrar(form.fecha, form.caja_id)
       cerrar()
     })
   }
@@ -217,6 +227,9 @@ export default function Economia() {
         metodo: traspaso.metodo,
         notas: traspaso.notas,
       })
+      // Un traspaso toca dos cajas: pasando null, `mostrar` saca el filtro de
+      // caja y las dos patas quedan a la vista.
+      mostrar(traspaso.fecha, null)
       cerrar()
     })
   }
