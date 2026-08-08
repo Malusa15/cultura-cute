@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase, supabaseConfigurado } from '../lib/supabase.js'
+import Reloj from '../components/Reloj.jsx'
 import { useSesion } from './useSesion.js'
 import Login from './Login.jsx'
 import ListaProductos from './ListaProductos.jsx'
@@ -92,6 +93,9 @@ export default function Admin() {
         </nav>
 
         <div className="admin__sesion">
+          {/* Fecha y hora siempre a la vista: es lo que se copia a mano al
+              anotar una venta o al acordar una entrega. */}
+          <Reloj className="reloj--admin" />
           <span className="admin__mail">{sesion?.user?.email}</span>
           <Link className="admin__link" to="/">
             Ver tienda

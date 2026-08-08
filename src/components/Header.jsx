@@ -4,6 +4,7 @@ import { useCarrito } from '../context/CarritoContext.jsx'
 import { asset } from '../lib/rutas.js'
 import { linkWhatsApp } from '../lib/whatsapp.js'
 import { IconoCarrito, IconoCerrar, IconoMenu, IconoWhatsApp } from './Iconos.jsx'
+import Reloj from './Reloj.jsx'
 
 export default function Header() {
   const [menuAbierto, setMenuAbierto] = useState(false)
@@ -20,10 +21,14 @@ export default function Header() {
   return (
     <header className="header">
       <div className="contenedor">
+        {/* La franja de arriba: las palabras de la marca y, al final, la fecha y
+            la hora corriendo. En pantallas chicas la regla del CSS esconde las
+            del medio, así que quedan «2026» y el reloj. */}
         <div className="header__eyebrow eyebrow">
           {MARCA.eyebrow.map((palabra) => (
             <span key={palabra}>{palabra}</span>
           ))}
+          <Reloj className="reloj--eyebrow" />
         </div>
 
         <div className="header__barra">

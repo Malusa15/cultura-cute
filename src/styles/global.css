@@ -173,6 +173,18 @@ ul {
   text-transform: lowercase;
 }
 
+/* Reloj. Corre segundo a segundo, así que los números van de ancho fijo: con la
+   tipografía normal el 1 es más angosto que el 8 y la línea entera se mueve en
+   cada tic. */
+.reloj {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.reloj--eyebrow {
+  letter-spacing: 0.14em;
+}
+
 .bajada {
   font-family: var(--serif);
   font-style: italic;

@@ -81,6 +81,14 @@
   opacity: 0.8;
 }
 
+/* El reloj del panel: mismo tono que el mail, pero sin encogerse cuando la
+   botonera de solapas se lleva todo el ancho. */
+.reloj--admin {
+  flex-shrink: 0;
+  opacity: 0.8;
+  letter-spacing: 0.06em;
+}
+
 .admin__link {
   padding: 0;
   border: none;

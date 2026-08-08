@@ -45,3 +45,19 @@ export function fechaCorta(valor) {
   const d = aFecha(valor)
   return Number.isNaN(d.getTime()) ? '' : diaLargo.format(d)
 }
+
+// "08/08/2026 · 14:32:05". Para el reloj que corre en la tienda y en el panel.
+// Van dos formateadores en vez de uno solo porque Intl junta fecha y hora con
+// una coma, y acá queremos el separador de la marca.
+const relojHora = new Intl.DateTimeFormat('es-AR', {
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+})
+
+export function fechaHora(valor) {
+  if (!valor) return '—'
+  const d = aFecha(valor)
+  return Number.isNaN(d.getTime()) ? '—' : `${diaLargo.format(d)} · ${relojHora.format(d)}`
+}
