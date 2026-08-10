@@ -17,3 +17,8 @@ multimedia/
 # el propio CLI, y cubre de paso cualquier .env con otro nombre.
 .vercel
 .env*
+
+# Documentación de Resend que instaló su integración (63 archivos, ~13.000
+# líneas). Sirve para trabajar sobre Resend pero no es código del sitio: queda
+# en la máquina y se puede regenerar corriendo la integración de nuevo.
+.agents/
