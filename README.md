@@ -329,6 +329,70 @@ sus renglones, y con cinco tablas habría que sumar cinco listas sin perder ning
 Es lo más privado del proyecto —cuánto entra, cuánto se gasta, cuánto cobra cada
 persona—, así que `anon` no lee nada, ni siquiera los nombres de las cajas.
 
+## Estadísticas de visitas
+
+La solapa **Estadísticas** del panel cuenta quién entra a la tienda: cuántas visitas y
+cuántas personas distintas, de qué país y ciudad, con qué aparato, por dónde llegaron
+(Instagram, Google, WhatsApp, directo) y cuánto se quedaron en cada sección.
+
+**Quién entró no se puede saber, y no es una limitación del sitio.** No se guarda ninguna
+IP, ningún nombre y ninguna cookie. Lo que identifica una visita es un hash de
+IP + navegador + **la fecha de hoy** + una sal secreta: alcanza para no contar diez veces
+a la misma persona el mismo día, y como la fecha entra en la mezcla, mañana esa misma
+persona genera otro código. No se puede volver del código a la IP ni seguir a nadie de un
+día para el otro. De quienes **compran** sí se sabe el nombre, porque lo dejan en el
+pedido, y eso vive en Ventas.
+
+Como no hay cookies ni almacenamiento persistente en el navegador de quien visita, **el
+sitio no necesita el cartel de cookies**. Se respeta además la opción «no rastrear» del
+navegador, y el panel `/admin` no se mide: son las visitas de la marca a sí misma.
+
+### Por qué hay una función de servidor
+
+El país y la ciudad salen de la IP, y la IP el navegador no la conoce: la ve el servidor.
+Vercel la resuelve y agrega el resultado como cabeceras (`x-vercel-ip-country`,
+`x-vercel-ip-city`), así que **`api/visita.js` es el único lugar del proyecto donde esa
+información existe** — y también el único por donde pasa la IP, que se usa para el hash y
+se tira. Nunca se guarda ni se registra en ningún log.
+
+Esa función llama a `registrar_visita`, una función `security definer` de Postgres, con la
+anon key. Es el mismo patrón que `registrar_pedido` del carrito: en vez de darle INSERT a
+`anon` sobre las tablas, se le da acceso a una sola función que recorta todo lo que entra
+(largos de texto, y un tope de ocho horas para que una pestaña olvidada abierta toda la
+noche no figure como que alguien miró la tienda durante nueve horas).
+
+Ojo con `vercel.json`: el rewrite que manda todo al `index.html` lleva `(?!api/)` para no
+tragarse la función. Sin eso, `/api/visita` nunca se ejecutaría.
+
+### Cómo se mide el tiempo por sección
+
+`src/lib/analitica.js` observa los `<section id>` con un `IntersectionObserver` y, una vez
+por segundo, le suma un segundo **a la sección que más pantalla ocupa en ese momento, y
+solo a esa**. Si se le sumara a todas las visibles, una pantalla grande que muestra tres
+secciones a la vez daría el triple de tiempo del que pasó. El reloj se frena cuando la
+pestaña queda en segundo plano.
+
+El aviso final va con `navigator.sendBeacon` y en el evento `pagehide`, no en `unload`:
+`unload` no se dispara de forma confiable en los navegadores de celular, que son la
+mayoría de las visitas. La visita se anota dos veces —una al entrar y otra al salir, con
+el tiempo ya medido— y la base se queda siempre con el tiempo mayor, así que reenviar no
+duplica ni achica nada.
+
+| Archivo | Qué hace |
+|---|---|
+| `supabase/estadisticas.sql` | Tablas `visitas` y `visita_secciones`, la función `registrar_visita` y RLS |
+| `api/visita.js` | Función de Vercel: resuelve país y ciudad, arma el código de visitante |
+| `src/lib/analitica.js` | Lo que mide desde la tienda |
+| `src/lib/estadisticas.js` | Las cuentas y la lectura para el panel |
+| `src/admin/Estadisticas.jsx` | La solapa del panel |
+
+### Vercel Web Analytics
+
+Además está `@vercel/analytics`, que cuenta las mismas visitas por su lado y las muestra en
+el panel de Vercel. Hay que **activarlo una vez** desde *Analytics → Enable* en el proyecto
+de Vercel. Sirve de segunda opinión: los números nunca dan idénticos porque cada uno cuenta
+de una manera, pero tienen que parecerse.
+
 ## Pendiente
 
 **Datos reales** (los actuales son de ejemplo, con fotos reales del portfolio):
@@ -360,9 +424,9 @@ Falta:
 
 1. Crear el proyecto en [supabase.com](https://supabase.com) (plan gratis).
 2. En el SQL Editor, correr en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
-   `supabase/ventas.sql`, `supabase/presupuestos.sql`, `supabase/pedidos-a-medida.sql` y
-   `supabase/economia.sql`. Los seis son idempotentes: si se corren dos veces no rompen
-   nada.
+   `supabase/ventas.sql`, `supabase/presupuestos.sql`, `supabase/pedidos-a-medida.sql`,
+   `supabase/economia.sql` y `supabase/estadisticas.sql`. Los siete son idempotentes: si se
+   corren dos veces no rompen nada.
 3. En **Authentication > Providers**, desactivar el registro público y dar de alta
    a mano las cuentas que van a entrar al panel.
 4. Copiar `.env.example` a `.env.local` y completar la URL y la anon key.

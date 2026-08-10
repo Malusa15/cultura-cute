@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import App from './App.jsx'
 import { CatalogoProvider } from './context/CatalogoContext.jsx'
 import { CarritoProvider } from './context/CarritoContext.jsx'
@@ -23,6 +24,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <CatalogoProvider>
         <CarritoProvider>
           <App />
+          {/* El contador de Vercel, que cuenta las mismas visitas por su lado y
+              las muestra en su panel. Es la segunda opinión del contador propio
+              de la solapa Estadísticas. Solo hace algo cuando el sitio corre en
+              Vercel, así que en desarrollo no molesta. */}
+          <Analytics />
         </CarritoProvider>
       </CatalogoProvider>
     </BrowserRouter>

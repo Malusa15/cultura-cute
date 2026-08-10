@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Header from './Header.jsx'
 import Hero from './Hero.jsx'
 import SobreNosotras from './SobreNosotras.jsx'
@@ -11,6 +11,7 @@ import Footer from './Footer.jsx'
 import Carrito from './Carrito.jsx'
 import { IconoWhatsApp } from './Iconos.jsx'
 import { linkWhatsApp } from '../lib/whatsapp.js'
+import { iniciarAnalitica } from '../lib/analitica.js'
 
 // La tienda pública. Es una sola página con secciones ancladas; el panel vive
 // aparte, en /admin.
@@ -22,6 +23,11 @@ export default function Sitio() {
   const [formulario, setFormulario] = useState(null)
 
   const alternar = (cual) => setFormulario((actual) => (actual === cual ? null : cual))
+
+  // Contar la visita. Va acá y no en main.jsx para que el panel no se mida a sí
+  // mismo, y después del primer pintado para que las secciones ya existan en la
+  // pantalla cuando el medidor las busque.
+  useEffect(() => iniciarAnalitica(), [])
 
   return (
     <>

@@ -983,6 +983,89 @@
   background: var(--rojo);
 }
 
+/* --- Estadísticas --------------------------------------------------------- */
+
+/* Lista ordenada con barra de fondo: orígenes, dispositivos, países. La barra va
+   por debajo del texto (position absolute) para que el nombre siempre se lea,
+   incluso sobre la parte pintada. */
+.admin-ranking {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-ranking__fila {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  isolation: isolate;
+}
+
+.admin-ranking__barra {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: -1;
+  border-radius: var(--radio);
+  background: rgba(169, 23, 11, 0.14);
+}
+
+.admin-ranking__nombre {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-ranking__cuenta {
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.admin-ranking__cuenta .admin-ayuda {
+  display: inline;
+  font-weight: 400;
+}
+
+/* Visitas por día: una columna por día, alineadas abajo. */
+.admin-barras {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(var(--columnas), minmax(0, 1fr));
+  align-items: end;
+  gap: 3px;
+  height: 120px;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1.5px solid var(--borde);
+}
+
+.admin-barras__dia {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.admin-barras__barra {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  background: var(--rojo);
+  /* Un día sin visitas tiene que verse como una rayita al ras y no como nada,
+     si no la seguidilla parece cortada. */
+  min-height: 2px;
+}
+
+.admin-barras__pie {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  opacity: 0.65;
+}
+
 /* Barrita con el conteo y el link de exportar, arriba de la tabla. */
 .admin__barra--tabla {
   margin-bottom: 8px;
