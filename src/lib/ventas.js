@@ -104,6 +104,28 @@ export async function registrarPedido({ nombre, contacto, items }) {
   return data?.[0] ?? null
 }
 
+// Le avisa al servidor que entró un pedido, para que mande el mail. Va aparte y
+// no adentro de `registrarPedido` a propósito: el pedido ya quedó guardado, y
+// que el aviso falle no puede hacer parecer que la compra falló.
+//
+// `keepalive` es lo que hace que la petición sobreviva al salto a WhatsApp, que
+// pasa inmediatamente después. Sin eso el navegador la cancelaría a mitad.
+export function avisarPedido(ventaId) {
+  if (!ventaId) return
+
+  try {
+    fetch('/api/aviso-pedido', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ venta_id: ventaId }),
+      keepalive: true,
+    }).catch(() => {})
+  } catch {
+    // Sin red o sin función de servidor: el pedido está guardado igual y se ve
+    // en el panel.
+  }
+}
+
 // --- Encargos ----------------------------------------------------------------
 
 export async function traerEncargos() {

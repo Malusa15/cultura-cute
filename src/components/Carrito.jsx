@@ -3,7 +3,7 @@ import { useCarrito } from '../context/CarritoContext.jsx'
 import { precio } from '../lib/formato.js'
 import { fotoUrl } from '../lib/rutas.js'
 import { linkWhatsApp, mensajePedido } from '../lib/whatsapp.js'
-import { registrarPedido } from '../lib/ventas.js'
+import { avisarPedido, registrarPedido } from '../lib/ventas.js'
 import { supabaseConfigurado } from '../lib/supabase.js'
 import { usePanel } from '../hooks/usePanel.js'
 import { IconoCerrar, IconoWhatsApp } from './Iconos.jsx'
@@ -36,7 +36,11 @@ export default function Carrito() {
     let numero = null
     if (supabaseConfigurado) {
       try {
-        numero = (await registrarPedido({ nombre: nombre.trim(), items }))?.numero ?? null
+        const venta = await registrarPedido({ nombre: nombre.trim(), items })
+        numero = venta?.numero ?? null
+        // Dispara el mail y sigue de largo: no se espera la respuesta porque lo
+        // único que importa acá es abrir el chat cuanto antes.
+        avisarPedido(venta?.id)
       } catch (e) {
         console.error('No se pudo registrar el pedido:', e?.message ?? String(e))
       }

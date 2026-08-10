@@ -11,3 +11,9 @@ dist
 # Material de origen: el PDF del portfolio y las fotos sin procesar. Pesan ~24 MB
 # y no hacen falta para el build; las versiones que usa el sitio están en public/img.
 multimedia/
+
+# Carpeta que crea el CLI de Vercel al enlazar el proyecto: lleva ids de la
+# cuenta y no tiene por qué viajar al repositorio. La línea de .env* la agregó
+# el propio CLI, y cubre de paso cualquier .env con otro nombre.
+.vercel
+.env*
