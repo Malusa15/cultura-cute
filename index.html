@@ -10,14 +10,40 @@
       name="description"
       content="Cultura.Cute nace para quienes entienden la ropa como una forma de expresión. Prendas artesanales y limitadas, con referencias Y2K y moda alternativa. Mar del Plata."
     />
-    <!-- Las meta de Open Graph necesitan URLs absolutas: Vite no reescribe el
-         contenido de las meta con el `base`, y las redes tampoco resuelven rutas
-         relativas. Si el sitio cambia de dominio, hay que actualizarlas acá. -->
-    <meta property="og:title" content="Cultura.Cute" />
-    <meta property="og:description" content="piezas únicas" />
-    <meta property="og:url" content="https://malusa15.github.io/cultura-cute/" />
-    <meta property="og:image" content="https://malusa15.github.io/cultura-cute/img/marca/wordmark.png" />
+    <link rel="canonical" href="https://culturacute.com.ar/" />
+
+    <!-- Esto es lo que se ve cuando alguien pega el link en Instagram, WhatsApp
+         o Facebook. Necesita URLs absolutas: Vite no reescribe el contenido de
+         las meta con el `base`, y las redes tampoco resuelven rutas relativas.
+         Si el sitio cambia de dominio hay que actualizarlas acá a mano — hasta
+         el 10/8/2026 apuntaban al viejo malusa15.github.io, que ya da 404, así
+         que el preview salía sin imagen.
+
+         La imagen es una tarjeta 1200x630 (la medida que piden las tres redes)
+         armada a propósito para esto, y no el wordmark suelto: es un PNG
+         transparente y sobre el fondo negro de WhatsApp no se veía. -->
+    <meta property="og:site_name" content="Cultura.Cute" />
+    <meta property="og:title" content="Cultura.Cute — piezas únicas" />
+    <meta
+      property="og:description"
+      content="Prendas artesanales y limitadas, con referencias Y2K y moda alternativa. Mar del Plata."
+    />
+    <meta property="og:url" content="https://culturacute.com.ar/" />
+    <meta property="og:image" content="https://culturacute.com.ar/img/marca/preview.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Cultura.Cute — piezas únicas" />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Cultura.Cute — piezas únicas" />
+    <meta
+      name="twitter:description"
+      content="Prendas artesanales y limitadas, con referencias Y2K y moda alternativa. Mar del Plata."
+    />
+    <meta name="twitter:image" content="https://culturacute.com.ar/img/marca/preview.jpg" />
+
     <meta name="theme-color" content="#A9170B" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

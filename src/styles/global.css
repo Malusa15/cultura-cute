@@ -528,6 +528,7 @@ ul {
 }
 
 .hero__punto {
+  position: relative;
   width: 32px;
   height: 4px;
   padding: 0;
@@ -535,6 +536,15 @@ ul {
   border-radius: 2px;
   background: rgba(255, 252, 232, 0.4);
   transition: background var(--transicion);
+}
+
+/* Los puntitos miden 4px de alto a propósito, pero 4px no se pueden tocar con
+   el dedo. Esta capa invisible agranda la zona sensible hasta 32px sin cambiar
+   nada de lo que se ve ni empujar el resto del hero. */
+.hero__punto::after {
+  content: '';
+  position: absolute;
+  inset: -14px 0;
 }
 
 .hero__punto[aria-current='true'] {
@@ -918,6 +928,8 @@ ul {
   align-items: center;
   gap: 8px;
   padding: 0;
+  /* Alto mínimo cómodo para el dedo: el texto solo daba 21px. */
+  min-height: 44px;
   border: none;
   background: none;
   color: var(--rojo);
@@ -1530,16 +1542,20 @@ ul {
   font-size: clamp(2.8rem, 8vw, 5.4rem);
 }
 
+/* El aire entre un dato y otro pasó de estar en el `gap` a estar adentro de cada
+   uno: se ve igual, pero el teléfono, el mail y el Instagram se pueden tocar en
+   toda esa altura y no solo en la línea de texto (antes daban 25px). */
 .contacto__datos {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 4px;
 }
 
 .contacto__dato {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding-block: 10px;
   font-family: var(--sans);
   font-size: 0.98rem;
   transition: opacity var(--transicion);
@@ -1602,9 +1618,13 @@ ul {
    propósito: se lee como un ítem más del pie y no como un botón. Lo único que la
    delata es el subrayado al pasarle el mouse, para que se note que se puede
    tocar. No se esconde del todo porque tiene que alcanzarse con el teclado. */
+/* Va dentro de una frase, así que el relleno vertical no mueve nada: en un link
+   en línea el padding agranda la zona sensible sin tocar la altura del renglón.
+   Sale gratis y se puede tocar con el dedo. */
 .footer__panel {
   color: inherit;
   text-decoration: none;
+  padding-block: 10px;
 }
 
 .footer__panel:hover,
