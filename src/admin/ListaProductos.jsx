@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { cambiarPublicacion, eliminarProducto, traerTodosLosProductos } from '../lib/catalogo.js'
 import { avisarCatalogoActualizado } from '../context/CatalogoContext.jsx'
-import { stockTotal } from '../lib/stock.js'
+import { alertasDeStock, stockTotal } from '../lib/stock.js'
 import { precio } from '../lib/formato.js'
 import { fotoUrl } from '../lib/rutas.js'
 
@@ -11,6 +11,11 @@ export default function ListaProductos({ alEditar }) {
   const [error, setError] = useState(null)
   // Id de la prenda con el borrado pendiente de confirmar.
   const [confirmando, setConfirmando] = useState(null)
+  // A partir de cuántas unidades avisar. Arranca en 1 —o sea, "queda la última"—
+  // porque con tandas chicas un número más alto marca casi todo y deja de servir.
+  const [umbral, setUmbral] = useState(1)
+
+  const alertas = useMemo(() => alertasDeStock(productos, umbral), [productos, umbral])
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -59,6 +64,50 @@ export default function ListaProductos({ alEditar }) {
       </div>
 
       {error && <p className="admin-error">{error}</p>}
+
+      {alertas.length > 0 && (
+        <div className="admin-pendientes">
+          <h3 className="admin-bloque__titulo">Se están por agotar</h3>
+          <p className="admin-ayuda">
+            Prendas publicadas a las que les falta stock. Las que no se pueden comprar en ningún
+            talle van primero: esas están en la tienda pero nadie las puede llevar.
+          </p>
+
+          <ul className="admin-pendientes__lista">
+            {alertas.map(({ producto, agotados, bajos, sinNada }) => (
+              <li key={producto.id}>
+                <span>
+                  <strong>{producto.nombre}</strong>
+                  {sinNada && <span className="admin-origen">Sin stock</span>}
+                  <span className="admin-ayuda">
+                    {' '}
+                    {agotados.length > 0 && `Agotado en ${agotados.join(', ')}.`}
+                    {bajos.length > 0 &&
+                      ` ${bajos.map((t) => `Talle ${t.talle}: ${t.stock}`).join(' · ')}.`}
+                  </span>
+                </span>
+                <button type="button" className="admin__link" onClick={() => alEditar(producto)}>
+                  Reponer
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <label className="admin-campo">
+            <span className="admin-campo__label">Avisarme cuando queden</span>
+            <select
+              className="admin-campo__control"
+              value={umbral}
+              onChange={(e) => setUmbral(Number(e.target.value))}
+            >
+              <option value={1}>1 unidad o menos</option>
+              <option value={2}>2 o menos</option>
+              <option value={3}>3 o menos</option>
+              <option value={5}>5 o menos</option>
+            </select>
+          </label>
+        </div>
+      )}
 
       {cargando ? (
         <p>Cargando prendas…</p>

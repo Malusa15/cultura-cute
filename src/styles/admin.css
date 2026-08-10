@@ -892,6 +892,12 @@
   display: inline;
 }
 
+/* El selector del umbral del aviso de stock, y cualquier campo suelto adentro
+   del bloque: angosto y pegado a la izquierda, no estirado a todo el ancho. */
+.admin-pendientes > .admin-campo {
+  max-width: 220px;
+}
+
 .admin-pendientes__pie {
   display: flex;
   flex-wrap: wrap;
