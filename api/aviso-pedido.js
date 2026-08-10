@@ -15,11 +15,20 @@ const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY ?? process.env.SUPABASE_
 const RESEND_KEY = process.env.RESEND_API_KEY
 
 const PARA = process.env.AVISO_MAIL_A
-// onboarding@resend.dev es el remitente que Resend presta sin configurar nada,
-// y solo puede escribirle al dueño de la cuenta — que es exactamente lo que
-// queremos acá. Para que salga de pedidos@culturacute.com.ar hay que verificar
-// el dominio en Resend y cambiar esta variable.
-const DESDE = process.env.AVISO_MAIL_DESDE ?? 'Cultura.Cute <onboarding@resend.dev>'
+
+// El dominio verificado lo deja la integración de Resend al instalarse, y como
+// el DNS de culturacute.com.ar vive en Vercel, los registros que hacen falta
+// (SPF y DKIM) se agregaron solos. Por eso el mail sale de la marca y no de una
+// dirección prestada: si saliera de resend.dev, Gmail lo mandaría a Spam más
+// seguido y contestar no serviría de nada.
+//
+// El respaldo es la dirección que Resend presta sin configurar nada, que solo
+// puede escribirle al dueño de la cuenta — o sea, a Malena. Sirve si algún día
+// el dominio deja de estar verificado.
+const DOMINIO = process.env.RESEND_EMAIL_DOMAIN
+const DESDE =
+  process.env.AVISO_MAIL_DESDE ??
+  (DOMINIO ? `Cultura.Cute <pedidos@${DOMINIO}>` : 'Cultura.Cute <onboarding@resend.dev>')
 
 const PANEL = 'https://culturacute.com.ar/admin'
 
