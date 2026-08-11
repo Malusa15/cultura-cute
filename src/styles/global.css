@@ -1842,3 +1842,23 @@ ul {
   flex: 1 1 140px;
   justify-content: center;
 }
+
+/* Compartir la prenda, debajo de "Agregar al carrito". Discreto a propósito: es
+   útil pero no es lo que se viene a hacer a la ficha. */
+.ficha__compartir {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--rojo);
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: opacity var(--transicion);
+}
+
+.ficha__compartir:hover {
+  opacity: 0.7;
+}

@@ -4,6 +4,7 @@ import { stockDeTalle, stockTotal } from '../lib/stock.js'
 import { precio } from '../lib/formato.js'
 import { fotoUrl } from '../lib/rutas.js'
 import { usePanel } from '../hooks/usePanel.js'
+import { linkDePrenda } from '../lib/prendas.js'
 import { IconoCerrar } from './Iconos.jsx'
 
 const ETIQUETAS_MEDIDAS = {
@@ -11,6 +12,34 @@ const ETIQUETAS_MEDIDAS = {
   busto: 'Busto',
   cintura: 'Cintura',
   cadera: 'Cadera',
+}
+
+// Compartir la prenda. En el celular abre el menú del sistema —WhatsApp,
+// Instagram, mensajes— y en la computadora, donde ese menú no existe, copia el
+// link al portapapeles y lo dice.
+function BotonCompartir({ producto }) {
+  const [copiado, setCopiado] = useState(false)
+  const link = `${window.location.origin}${linkDePrenda(producto)}`
+
+  const compartir = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: producto.nombre, url: link })
+        return
+      }
+      await navigator.clipboard.writeText(link)
+      setCopiado(true)
+      setTimeout(() => setCopiado(false), 2500)
+    } catch {
+      // Cancelar el menú de compartir tira un error: no es un problema.
+    }
+  }
+
+  return (
+    <button type="button" className="ficha__compartir" onClick={compartir}>
+      {copiado ? '¡Link copiado!' : 'Compartir esta prenda'}
+    </button>
+  )
 }
 
 export default function ModalProducto({ producto, alCerrar }) {
@@ -170,6 +199,8 @@ export default function ModalProducto({ producto, alCerrar }) {
                 {agotado ? 'Sin stock' : 'Agregar al carrito'}
               </button>
             </div>
+
+            <BotonCompartir producto={producto} />
           </div>
         </div>
       </div>

@@ -1,0 +1,9 @@
+# Los buscadores pueden recorrer toda la tienda.
+User-agent: *
+Allow: /
+
+# El panel no: son datos del negocio y además pide contraseña, así que no tiene
+# nada que hacer en un buscador.
+Disallow: /admin
+
+Sitemap: https://culturacute.com.ar/sitemap.xml

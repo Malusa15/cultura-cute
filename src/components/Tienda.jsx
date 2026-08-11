@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { buscarPorLink, linkDePrenda } from '../lib/prendas.js'
 import { useCatalogo } from '../context/CatalogoContext.jsx'
 import { hayStock } from '../lib/stock.js'
 import { linkWhatsApp } from '../lib/whatsapp.js'
@@ -56,7 +58,24 @@ function seleccionSinPrendas(filtros, hayProductosCon) {
 export default function Tienda() {
   const { catalogo, cargando, hayProductosCon } = useCatalogo()
   const [filtros, setFiltros] = useState(FILTROS_INICIALES)
-  const [productoAbierto, setProductoAbierto] = useState(null)
+
+  // Qué prenda está abierta lo dice la dirección, no un estado aparte. Así el
+  // link que se comparte y lo que se ve en pantalla no pueden discrepar: entrar
+  // de cero a /prenda/corset-azul-fa3d5560 abre la misma ficha que hacer clic
+  // en la tarjeta, y el botón "atrás" del navegador cierra la ficha solo.
+  const { slug } = useParams()
+  const navegar = useNavigate()
+
+  const productoAbierto = useMemo(() => buscarPorLink(catalogo, slug), [catalogo, slug])
+
+  // Una prenda que ya no existe —se borró, o se despublicó— no puede dejar a
+  // quien entró mirando una dirección que no lleva a ningún lado. Se lo manda a
+  // la tienda, que es lo más parecido a lo que venía a ver.
+  useEffect(() => {
+    if (slug && !cargando && catalogo.length > 0 && !productoAbierto) {
+      navegar('/', { replace: true })
+    }
+  }, [slug, cargando, catalogo.length, productoAbierto, navegar])
 
   const visibles = useMemo(
     () => catalogo.filter((producto) => pasaFiltros(producto, filtros)),
@@ -85,7 +104,11 @@ export default function Tienda() {
         {!cargando && visibles.length > 0 && (
           <div className="grid-productos">
             {visibles.map((producto) => (
-              <TarjetaProducto key={producto.id} producto={producto} alAbrir={setProductoAbierto} />
+              <TarjetaProducto
+                key={producto.id}
+                producto={producto}
+                alAbrir={(p) => navegar(linkDePrenda(p))}
+              />
             ))}
           </div>
         )}
@@ -137,7 +160,10 @@ export default function Tienda() {
       </div>
 
       {productoAbierto && (
-        <ModalProducto producto={productoAbierto} alCerrar={() => setProductoAbierto(null)} />
+        <ModalProducto
+          producto={productoAbierto}
+          alCerrar={() => navegar('/', { replace: true })}
+        />
       )}
     </section>
   )
