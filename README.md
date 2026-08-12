@@ -437,6 +437,75 @@ el panel de Vercel. Hay que **activarlo una vez** desde *Analytics → Enable* e
 de Vercel. Sirve de segunda opinión: los números nunca dan idénticos porque cada uno cuenta
 de una manera, pero tienen que parecerse.
 
+## Avisos: pedidos y stock
+
+**Cuando entra un pedido del carrito llega un mail.** Antes el pedido caía en la base y
+había que abrir el panel para enterarse. Ahora la tienda avisa a `api/aviso-pedido.js`
+apenas queda guardado, y esa función arma el correo con el detalle, el total y un link al
+panel. Sale de `pedidos@culturacute.com.ar` por **Resend**, instalado desde el Marketplace
+de Vercel; como el DNS del dominio está delegado a Vercel, los registros de SPF y DKIM se
+configuraron solos y el dominio quedó verificado. Contestar el mail le escribe a la
+clienta.
+
+El aviso se dispara **después** de que el pedido ya se guardó y sin esperar la respuesta:
+si el mail falla, la compra sigue igual. Va con `keepalive` porque enseguida se salta a
+WhatsApp y si no el navegador cancelaría la petición.
+
+La función necesita leer el pedido para poder contarlo, y las ventas están cerradas a quien
+no tiene sesión. La puerta angosta es `resumen_de_venta` (`supabase/aviso-pedidos.sql`):
+devuelve **un solo pedido y solo si entró hace menos de quince minutos**. Sin ese límite,
+cualquiera con el id de una venta podría sacar el nombre y el teléfono de esa clienta para
+siempre.
+
+**Arriba de la lista de Prendas se avisa qué se está por agotar.** Agrupado por prenda y no
+por talle: las tandas son chicas, así que por talle serían veinte renglones y no se leería
+ninguno. Primero las que no se pueden comprar en ningún talle —esas están publicadas y
+nadie se las puede llevar—, después las que menos unidades tienen. El umbral arranca en
+"queda 1 o menos"; con el stock actual, avisar desde 2 marca nueve de nueve prendas y el
+aviso deja de servir. La cuenta está en `alertasDeStock`, en `src/lib/stock.js`.
+
+## Respaldo
+
+La solapa **Respaldo** baja un archivo con todas las tablas de la base. Se piden de a mil
+filas hasta que no venga nada más: sin eso, el día que haya más de mil visitas el respaldo
+se llevaría solo las primeras mil sin avisar. Si una tabla falla se anota y sigue con las
+demás — es mejor un respaldo de catorce tablas que ninguno.
+
+No incluye las fotos de las prendas y no hace falta: hoy son archivos del repositorio, así
+que ya están guardadas con el código. Restaurar no se hace desde el panel a propósito:
+sobrescribir una base es de las pocas cosas que no tienen vuelta atrás.
+
+## Cuánto deja cada prenda
+
+`productos.costo` guarda lo que cuesta producir una unidad, y se carga desde el formulario
+de la prenda. Con eso, el bloque *Qué prendas se vendieron* de Economía pasa de decir
+cuánto **entró** a decir cuánto **dejó**. El costo se busca en dos lados y en este orden:
+el campo de la prenda primero, y si no está, un presupuesto que se llame igual (comparando
+sin mayúsculas ni acentos). Si no hay ninguno de los dos queda en blanco: es preferible a
+inventar un margen.
+
+La columna la agrega la parte final de `economia.sql`, que se corre a mano, así que el
+código está escrito para aguantar el hueco. Dos medidas concretas: `SELECT_PRODUCTO` pide
+las columnas con `*` —pidiendo `costo` por nombre, la tienda entera se caería hasta correr
+el SQL— y `guardarProducto` pregunta una vez por sesión si la columna existe antes de
+mencionarla, porque nombrar una columna inexistente hace fallar el guardado entero y cargar
+una prenda no puede depender de un SQL pendiente.
+
+## Qué descarga quien entra a la tienda
+
+El panel se carga aparte, con `lazy()`, y `admin.css` se importa desde `Admin.jsx` en vez
+de `main.jsx` para que los estilos viajen en el mismo pedazo. Antes, quien entraba a mirar
+prendas se bajaba también las diez solapas del panel.
+
+| | Código | Estilos | Total |
+|---|---|---|---|
+| Antes | 166 KB | 8 KB | **174 KB** |
+| Ahora | 139 KB | 5 KB | **144 KB** |
+
+Los 32 KB del panel se bajan recién al abrir `/admin`. El cartel de «Cargando el panel»
+lleva los estilos escritos adentro y no en una clase: la hoja del panel viaja con el panel,
+así que con una clase aparecería sin formato justo cuando se lo ve.
+
 ## Pendiente
 
 **Datos reales** (los actuales son de ejemplo, con fotos reales del portfolio):
@@ -469,7 +538,7 @@ Falta:
 1. Crear el proyecto en [supabase.com](https://supabase.com) (plan gratis).
 2. En el SQL Editor, correr en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
    `supabase/ventas.sql`, `supabase/presupuestos.sql`, `supabase/pedidos-a-medida.sql`,
-   `supabase/economia.sql` y `supabase/estadisticas.sql`. Los siete son idempotentes: si se
+   `supabase/economia.sql`, `supabase/estadisticas.sql` y `supabase/aviso-pedidos.sql`. Los ocho son idempotentes: si se
    corren dos veces no rompen nada.
 3. En **Authentication > Providers**, desactivar el registro público y dar de alta
    a mano las cuentas que van a entrar al panel.

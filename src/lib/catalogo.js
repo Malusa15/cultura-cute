@@ -10,6 +10,10 @@ export function aProducto(fila) {
     id: fila.id,
     nombre: fila.nombre,
     precio: fila.precio,
+    // Lo que cuesta hacerla. `null` es "todavía no lo anoté" y no cero: cero
+    // sería una prenda que sale gratis, y en el informe de Economía la haría
+    // aparecer con una ganancia que no es real.
+    costo: fila.costo ?? null,
     genero: fila.genero ?? null,
     // La tienda filtra por nombre; el formulario del panel necesita los ids.
     categoria: fila.categorias?.nombre ?? null,
@@ -39,9 +43,12 @@ export function aProducto(fila) {
   }
 }
 
+// Las columnas van con `*` y no enumeradas a propósito, igual que en
+// presupuestos.js: `costo` la agrega la parte nueva de economia.sql, que se
+// corre a mano. Pidiéndola por nombre, la tienda entera se caería hasta que ese
+// SQL se ejecute; con `*` viene si está y no viene si no está.
 const SELECT_PRODUCTO = `
-  id, nombre, precio, genero, descripcion, medidas, materiales, composicion,
-  color, estilo, imagenes, activo, orden, categoria_id, subcategoria_id,
+  *,
   categorias ( nombre ),
   subcategorias ( nombre ),
   talles ( id, talle, stock, orden )
@@ -88,6 +95,23 @@ export async function traerCategorias() {
 
 // --- Escritura (solo desde el panel, requiere sesión) ------------------------
 
+// ¿La base ya tiene la columna `costo`? La agrega la parte nueva de
+// economia.sql, que se corre a mano, así que hasta que eso pase no se puede ni
+// mencionar: nombrar una columna que no existe hace fallar el guardado entero, y
+// cargar una prenda no puede depender de un SQL pendiente.
+//
+// Se pregunta una sola vez por sesión y se recuerda: son cientos de guardados
+// contra una consulta.
+let columnaCosto = null
+
+async function hayColumnaCosto() {
+  if (columnaCosto === null) {
+    const { error } = await supabase.from('productos').select('costo').limit(1)
+    columnaCosto = !error
+  }
+  return columnaCosto
+}
+
 export async function guardarProducto(producto, talles) {
   const fila = {
     nombre: producto.nombre,
@@ -104,6 +128,12 @@ export async function guardarProducto(producto, talles) {
     imagenes: producto.imagenes ?? [],
     activo: producto.activo ?? true,
     orden: producto.orden ?? 0,
+  }
+
+  if (await hayColumnaCosto()) {
+    // Vacío se guarda como null y no como cero: son cosas distintas.
+    const costo = String(producto.costo ?? '').trim()
+    fila.costo = costo === '' ? null : Math.max(0, Math.round(Number(costo)) || 0)
   }
 
   let id = producto.id

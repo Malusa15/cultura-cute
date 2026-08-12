@@ -113,6 +113,26 @@ alter table movimientos
 create index if not exists movimientos_encargo_idx on movimientos(encargo_id);
 create index if not exists movimientos_envio_idx   on movimientos(envio_id);
 
+-- ----------------------------------------------------------------------------
+-- Cuánto cuesta hacer cada prenda
+--
+-- Va en `productos` y no en una tabla aparte porque es un dato de la prenda,
+-- como el precio. Sirve para que la solapa Economía pueda contestar cuánto
+-- **deja** cada prenda y no solo cuánto entró: hasta ahora el costo solo existía
+-- para lo hecho a medida, en los presupuestos, y las prendas del catálogo no lo
+-- tenían anotado en ningún lado.
+--
+-- Puede quedar en null: una prenda sin costo cargado sigue funcionando igual y
+-- en el informe aparece como "sin costo cargado". Es a propósito — obligar a
+-- ponerle un número inventado a cada prenda vieja sería peor que no tenerlo.
+-- ----------------------------------------------------------------------------
+
+alter table productos
+  add column if not exists costo integer check (costo is null or costo >= 0);
+
+comment on column productos.costo is
+  'Lo que cuesta producir una unidad, en pesos enteros: telas, avíos y mano de obra.';
+
 create index if not exists movimientos_fecha_idx    on movimientos(fecha desc);
 create index if not exists movimientos_caja_idx     on movimientos(caja_id);
 create index if not exists movimientos_tipo_idx     on movimientos(tipo);

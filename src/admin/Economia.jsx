@@ -42,6 +42,7 @@ const SIN_DATOS = {
   encargos: [],
   envios: [],
   presupuestos: [],
+  productos: [],
   enlaces: false,
 }
 
@@ -124,7 +125,7 @@ function paraEditar(m) {
 
 export default function Economia() {
   const { datos, cargando, error, setError, correr } = useLista(traerEconomia, SIN_DATOS)
-  const { cajas, movimientos, ventas, encargos, envios, presupuestos, enlaces } = datos
+  const { cajas, movimientos, ventas, encargos, envios, presupuestos, productos, enlaces } = datos
 
   // Una sola puerta a la vez: null es la lista, y cada valor es un formulario.
   const [vista, setVista] = useState(null)
@@ -173,7 +174,10 @@ export default function Economia() {
     () => ultimosMeses(porCaja, 6, mes === 'todos' ? mesActual() : mes),
     [porCaja, mes],
   )
-  const prendas = useMemo(() => porPrenda(ventas, presupuestos, mes), [ventas, presupuestos, mes])
+  const prendas = useMemo(
+    () => porPrenda(ventas, presupuestos, mes, productos),
+    [ventas, presupuestos, mes, productos],
+  )
 
   const sinCargar = useMemo(
     () => pendientes({ movimientos, ventas, encargos, envios, enlaces }),
@@ -641,10 +645,10 @@ export default function Economia() {
             <summary className="admin-bloque__titulo">Qué prendas se vendieron</summary>
             <p className="admin-ayuda">
               Las ventas confirmadas y entregadas del mes elegido (esto no mira el filtro de caja: es
-              sobre las ventas, no sobre dónde entró la plata). El <strong>costo</strong> aparece solo
-              cuando hay un presupuesto con ese mismo nombre de prenda, que es el único lugar donde
-              hoy se anota lo que cuesta hacerla. Las prendas del catálogo no tienen costo cargado en
-              ninguna parte, así que de esas se ve lo que entró, no lo que dejaron.
+              sobre las ventas, no sobre dónde entró la plata). El <strong>costo</strong> sale del
+              campo «Costo de producción» de cada prenda, en la solapa Prendas, y si no está cargado
+              se busca un presupuesto que se llame igual. Las prendas donde no hay ninguno de los dos
+              muestran lo que entró pero no cuánto dejaron: cargales el costo y aparece.
             </p>
 
             {prendas.length === 0 ? (

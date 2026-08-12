@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { guardarProducto, subirFoto, traerCategorias } from '../lib/catalogo.js'
 import { avisarCatalogoActualizado } from '../context/CatalogoContext.jsx'
 import { fotoUrl } from '../lib/rutas.js'
+import { precio } from '../lib/formato.js'
 import { ESTILOS, GENEROS, MATERIALES, ORDEN_TALLES } from '../data/taxonomia.js'
 
 // Las medidas son campos libres, pero estas son las que se repiten en casi todas
@@ -13,6 +14,7 @@ function estadoInicial(producto) {
     id: producto?.id ?? null,
     nombre: producto?.nombre ?? '',
     precio: producto?.precio ?? '',
+    costo: producto?.costo ?? '',
     genero: producto?.genero ?? 'Mujer',
     categoria_id: producto?.categoria_id ?? '',
     subcategoria_id: producto?.subcategoria_id ?? '',
@@ -164,6 +166,30 @@ export default function FormularioProducto({ producto, alCerrar }) {
             onChange={campo('precio')}
             required
           />
+        </label>
+
+        <label className="admin-campo">
+          <span className="admin-campo__label">Costo de producción (ARS)</span>
+          <input
+            className="admin-campo__control"
+            type="number"
+            min="0"
+            step="500"
+            value={datos.costo}
+            onChange={campo('costo')}
+            placeholder="Opcional"
+          />
+          <span className="admin-ayuda">
+            Lo que te sale hacer una: telas, avíos y tu tiempo. No se muestra en la tienda; sirve
+            para que Economía te diga cuánto deja cada prenda.
+            {datos.precio > 0 && datos.costo > 0 && (
+              <>
+                {' '}
+                Deja <strong>{precio(datos.precio - datos.costo)}</strong> por unidad
+                {datos.precio > 0 && ` (${Math.round((1 - datos.costo / datos.precio) * 100)}%)`}.
+              </>
+            )}
+          </span>
         </label>
 
         <label className="admin-campo">

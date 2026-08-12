@@ -1,6 +1,7 @@
 import { supabase } from './supabase.js'
 import { aFecha } from './formato.js'
 import { calcular as calcularPresupuesto, traerPresupuestos } from './presupuestos.js'
+import { traerTodosLosProductos } from './catalogo.js'
 
 // Economía de la marca: dónde está la plata (cajas) y cada vez que entra o sale
 // (movimientos). Acá viven las listas fijas, las cuentas de saldo y resumen, y
@@ -245,19 +246,32 @@ function normalizar(texto) {
     .replace(/[\u0300-\u036f]/g, '')
 }
 
-// Qué prendas se vendieron en el período y cuánto facturó cada una.
+// Qué prendas se vendieron en el período, cuánto facturó cada una y cuánto dejó.
 //
-// El costo solo aparece cuando hay un presupuesto con ese mismo nombre de
-// prenda, que es el único lugar del panel donde hoy se anota lo que cuesta
-// hacer algo (materiales + horas). Las prendas del catálogo no tienen costo
-// cargado en ninguna parte, así que de esas se sabe lo que entró, no lo que
-// dejaron. El componente lo dice con todas las letras.
-export function porPrenda(ventas, presupuestos, mes) {
+// El costo sale de dos lados, en este orden:
+//
+//   1. El campo «Costo de producción» de la prenda del catálogo, que es el dato
+//      bueno: lo cargó ella mirando esa prenda.
+//   2. Si no está, un presupuesto que se llame igual. Cubre lo hecho a medida,
+//      donde el costo se arma con los materiales y las horas.
+//
+// Y si no hay ninguno de los dos, queda en null y la tabla lo dice: es preferible
+// a inventar un margen que no significa nada.
+export function porPrenda(ventas, presupuestos, mes, productos = []) {
   const costos = new Map()
+
+  // Los presupuestos primero para que el costo del catálogo, que se carga
+  // después, pise al del presupuesto cuando existen los dos.
   for (const p of presupuestos) {
     const clave = normalizar(p.prenda)
     if (!clave || costos.has(clave)) continue
     costos.set(clave, calcularPresupuesto(p, p.materiales ?? []).costo)
+  }
+
+  for (const p of productos) {
+    const clave = normalizar(p.nombre)
+    if (!clave || p.costo == null) continue
+    costos.set(clave, num(p.costo))
   }
 
   const prendas = new Map()
@@ -534,12 +548,14 @@ async function hayEnlaces() {
 // pedazos.
 export async function traerEconomia() {
   try {
-    const [cajas, movimientos, ventas, enlaces, presupuestos] = await Promise.all([
+    const [cajas, movimientos, ventas, enlaces, presupuestos, productos] = await Promise.all([
       traerCajas(),
       traerMovimientos(),
       traerVentasCobrables(),
       hayEnlaces(),
       traerPresupuestos(),
+      // Para el costo de producción de cada prenda del catálogo.
+      traerTodosLosProductos(),
     ])
 
     // Encargos y envíos solo si se pueden enlazar: sin eso la lista de
@@ -548,7 +564,7 @@ export async function traerEconomia() {
       ? await Promise.all([traerEncargosConSena(), traerEnviosConCosto()])
       : [[], []]
 
-    return { cajas, movimientos, ventas, encargos, envios, presupuestos, enlaces }
+    return { cajas, movimientos, ventas, encargos, envios, presupuestos, productos, enlaces }
   } catch (e) {
     if (faltaElSql(e)) {
       throw new Error(
