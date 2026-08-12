@@ -6,7 +6,9 @@ import App from './App.jsx'
 import { CatalogoProvider } from './context/CatalogoContext.jsx'
 import { CarritoProvider } from './context/CarritoContext.jsx'
 import './styles/global.css'
-import './styles/admin.css'
+// admin.css NO se importa acá: viaja con el panel (ver src/admin/Admin.jsx), que
+// se carga aparte. Son 23 KB de estilos de tablas y formularios que quien entra
+// a ver prendas no necesita.
 
 // Contraparte de public/404.html: si se entró directo a una ruta que GitHub
 // Pages no conoce, la recuperamos antes de que el router lea la URL.

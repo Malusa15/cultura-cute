@@ -329,6 +329,50 @@ sus renglones, y con cinco tablas habría que sumar cinco listas sin perder ning
 Es lo más privado del proyecto —cuánto entra, cuánto se gasta, cuánto cobra cada
 persona—, así que `anon` no lee nada, ni siquiera los nombres de las cajas.
 
+## El link propio de cada prenda
+
+Cada prenda tiene su dirección: `/prenda/corset-azul-satinado-fa3d5560`. Sirve para mandar
+por WhatsApp el link de **una** prenda, y para que Google las indexe una por una en vez de
+ver una sola página con todo adentro.
+
+**El link lleva el nombre y además un pedazo del id, y para encontrar la prenda se usa solo
+el id.** El nombre es decorado: hace que el link se entienda al leerlo y le da a Google
+palabras con las que encontrarla. Si el nombre dependiera de verdad, corregir una falta de
+ortografía rompería todos los links ya compartidos. Ocho caracteres del uuid son 4.300
+millones de combinaciones — no chocan.
+
+**Qué prenda está abierta lo dice la dirección**, no un estado de React. Así el link que se
+comparte y lo que se ve no pueden discrepar, entrar de cero a un link abre la misma ficha
+que hacer clic, y el botón *atrás* del navegador cierra la ficha solo. Si la prenda ya no
+existe o se ocultó, manda a la tienda.
+
+Las tarjetas son `<Link>` y no `<button>`: un link de verdad lo sigue Google y se puede
+abrir en otra pestaña con Ctrl+clic. El clic normal lo intercepta React y no recarga nada.
+
+### Por qué hace falta `api/prenda.js`
+
+**WhatsApp, Instagram y Facebook no ejecutan JavaScript.** Piden la página y leen el
+encabezado del HTML. Para ellos la tienda es un archivo casi vacío, así que sin esto el
+link de un corset mostraba exactamente la misma vista previa que el link de la home.
+
+La función intercepta solo `/prenda/…`, busca la prenda y reescribe título, descripción,
+`og:image` y `canonical` **sobre el `index.html` de siempre**, que pide por HTTP. Se toca
+la plantilla que ya existe en vez de mantener una copia acá: dos plantillas se separan sola
+con el tiempo. Agrega además el `application/ld+json` de tipo `Product`, que es lo que le
+permite a Google mostrar precio y disponibilidad en los resultados.
+
+La dirección canónica se arma desde los datos de la prenda y no se copia la que pidió el
+visitante: como el texto del link no importa, sin esto Google indexaría la misma prenda
+tantas veces como formas de escribirla haya. Una prenda que no existe devuelve 404 con la
+página normal, así el buscador no se guarda algo que ya no está.
+
+`/sitemap.xml` (`api/sitemap.js`) se arma en el momento leyendo el catálogo, así una prenda
+nueva aparece sin volver a publicar el sitio. `public/robots.txt` lo anuncia y deja
+`/admin` afuera de los buscadores.
+
+Ojo con el orden de los `rewrites` en `vercel.json`: `/prenda/(.*)` y `/sitemap.xml` van
+**antes** del comodín que manda todo al `index.html`, porque gana el primero que coincide.
+
 ## Estadísticas de visitas
 
 La solapa **Estadísticas** del panel cuenta quién entra a la tienda: cuántas visitas y

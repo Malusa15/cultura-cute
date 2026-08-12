@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+// Los estilos del panel se importan desde acá y no desde main.jsx para que
+// viajen en el mismo pedazo que el panel, que se carga aparte.
+import '../styles/admin.css'
 import { supabase, supabaseConfigurado } from '../lib/supabase.js'
 import Reloj from '../components/Reloj.jsx'
 import { useSesion } from './useSesion.js'
