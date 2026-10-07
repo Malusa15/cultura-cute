@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js'
+import { compararTalles } from '../data/taxonomia.js'
 
-const ORDEN_TALLES = ['XS', 'S', 'M', 'L', 'XL', 'Único']
 
 // Pasa una fila de la base a la forma que usan los componentes, que es plana:
 // la tienda no tiene por qué saber que categoría y subcategoría viven en otras
@@ -32,13 +32,11 @@ export function aProducto(fila) {
     // prefijadas y las volvería a guardar así, rompiendo la ruta.
     imagenes: (fila.imagenes ?? []).filter(Boolean),
     activo: fila.activo,
+    // El orden sale de la taxonomía y no del campo `orden` de la base: así un
+    // par cargado 38, 35, 41 se muestra 35, 38, 41, igual que la ropa se muestra
+    // S, M, L.
     talles: [...(fila.talles ?? [])]
-      .sort((a, b) => {
-        const posA = ORDEN_TALLES.indexOf(a.talle)
-        const posB = ORDEN_TALLES.indexOf(b.talle)
-        if (posA !== -1 && posB !== -1) return posA - posB
-        return (a.orden ?? 0) - (b.orden ?? 0)
-      })
+      .sort((a, b) => compararTalles(a.talle, b.talle))
       .map((t) => ({ talle: t.talle, stock: t.stock })),
   }
 }

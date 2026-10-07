@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { PRODUCTOS } from '../data/productos.js'
-import { ORDEN_TALLES } from '../data/taxonomia.js'
+import { compararTalles } from '../data/taxonomia.js'
 import { supabaseConfigurado } from '../lib/supabase.js'
 import { traerCatalogoPublico } from '../lib/catalogo.js'
 
@@ -29,8 +29,10 @@ function derivar(catalogo) {
     // prenda puede traer uno nuevo, así que salen del catálogo.
     colores: [...valores.color].filter(Boolean).sort((a, b) => a.localeCompare(b, 'es')),
 
+    // Acá conviven la ropa y el calzado, así que el orden lo resuelve
+    // compararTalles: primero las letras y después los números.
     talles: [...new Set(catalogo.flatMap((p) => p.talles.map((t) => t.talle)))].sort(
-      (a, b) => ORDEN_TALLES.indexOf(a) - ORDEN_TALLES.indexOf(b),
+      compararTalles,
     ),
 
     // Con el catálogo vacío, Math.max de nada da -Infinity y rompe el slider.

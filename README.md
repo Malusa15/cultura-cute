@@ -122,7 +122,7 @@ Las opciones viven en `src/data/taxonomia.js` y están organizadas en ejes separ
 
 | Filtro | Opciones |
 |---|---|
-| Categoría (principal) | Partes de arriba · Partes de abajo · Abrigos · Conjuntos · Accesorios · Cuties |
+| Categoría (principal) | Partes de arriba · Partes de abajo · Abrigos · Conjuntos · Accesorios · Calzado · Cuties |
 | Género | Mujer · Hombre |
 | Subcategoría | Depende de la categoría elegida |
 | Talle · Color | Salen del catálogo |
@@ -150,6 +150,33 @@ Dos criterios de armado, para no repetir el mismo filtro dos veces:
   "Partes de abajo" + "Jean", y así el mismo filtro sirve para una campera de jean.
 - **Las categorías viejas** (Tops, Pantalones, Polleras, Vestidos) pasaron a ser
   subcategorías, porque "partes de arriba/abajo" ya cubre ese nivel.
+
+## Calzado
+
+El calzado **no es una sección aparte**: es una categoría más del catálogo, con sus
+variedades como subcategorías (Sandalias, Tacos, Botas, Botinetas, Zapatillas, Chatitas).
+Se carga desde la misma solapa Prendas, así que hereda todo sin duplicar nada — fotos,
+precio, costo, stock por talle, el link propio de la prenda, los avisos de stock bajo y la
+cuenta de Economía.
+
+Lo único que cambia es que se numera en vez de tallarse con letras, y eso se resuelve en
+tres lugares:
+
+- `tallesSugeridos(categoria)` en `taxonomia.js` decide qué ofrece el campo del talle: del
+  34 al 41 para Calzado, XS–XL para el resto. Es una sugerencia y no una restricción: el
+  campo sigue siendo libre.
+- Al elegir Calzado, los renglones que el formulario propone pasan de S/M/L a 36/37/38,
+  **solo si no se tocaron y están en cero**. Si ya hay stock cargado o un talle escrito a
+  mano, no se pisa nada: perder stock recién cargado sería mucho peor que ahorrar tres
+  renglones.
+- `compararTalles` ordena los dos sistemas juntos. Hace falta en el filtro de la tienda,
+  donde conviven: ordenando solo por `ORDEN_TALLES`, los números quedaban todos en -1 y
+  salían en el orden en que se hubieran cargado (38, 35, 41). Letras primero, después
+  números.
+
+La lista de variedades está en dos lados y tienen que coincidir: `supabase/calzado.sql`
+—lo que se puede elegir al cargar una prenda— y `taxonomia.js` —lo que se puede filtrar al
+comprarla—. Las de la base se pueden editar desde la solapa Categorías.
 
 ## WhatsApp
 
@@ -538,7 +565,7 @@ Falta:
 1. Crear el proyecto en [supabase.com](https://supabase.com) (plan gratis).
 2. En el SQL Editor, correr en este orden: `supabase/schema.sql`, `supabase/seed.sql`,
    `supabase/ventas.sql`, `supabase/presupuestos.sql`, `supabase/pedidos-a-medida.sql`,
-   `supabase/economia.sql`, `supabase/estadisticas.sql` y `supabase/aviso-pedidos.sql`. Los ocho son idempotentes: si se
+   `supabase/economia.sql`, `supabase/estadisticas.sql`, `supabase/aviso-pedidos.sql` y `supabase/calzado.sql`. Los nueve son idempotentes: si se
    corren dos veces no rompen nada.
 3. En **Authentication > Providers**, desactivar el registro público y dar de alta
    a mano las cuentas que van a entrar al panel.

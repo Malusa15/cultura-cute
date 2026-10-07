@@ -3,7 +3,7 @@ import { guardarProducto, subirFoto, traerCategorias } from '../lib/catalogo.js'
 import { avisarCatalogoActualizado } from '../context/CatalogoContext.jsx'
 import { fotoUrl } from '../lib/rutas.js'
 import { precio } from '../lib/formato.js'
-import { ESTILOS, GENEROS, MATERIALES, ORDEN_TALLES } from '../data/taxonomia.js'
+import { ESTILOS, GENEROS, MATERIALES, tallesSugeridos } from '../data/taxonomia.js'
 
 // Las medidas son campos libres, pero estas son las que se repiten en casi todas
 // las prendas, así que el formulario arranca con ellas.
@@ -74,6 +74,28 @@ export default function FormularioProducto({ producto, alCerrar }) {
     }))
 
   const categoriaElegida = categorias.find((c) => c.id === datos.categoria_id)
+
+  // El calzado se numera y la ropa se talla con letras, así que las sugerencias
+  // del campo cambian según qué se esté cargando. El campo sigue siendo libre:
+  // la lista es una ayuda, no una restricción.
+  const sugerencias = tallesSugeridos(categoriaElegida?.nombre)
+
+  // Los renglones de talle que propone el formulario al abrirse. Si todavía están
+  // tal cual —sin tocar y sin stock— y se elige Calzado, se cambian por
+  // numeración; es lo que iba a tener que escribir igual. Si ya los editó no se
+  // le toca nada: perder stock recién cargado sería mucho peor que ahorrarle
+  // tres renglones.
+  const cambiarTallesPorDefecto = (idCategoria) => {
+    const sinTocar = talles.every((t) => t.stock === 0) &&
+      (talles.map((t) => t.talle).join() === 'S,M,L' ||
+        talles.map((t) => t.talle).join() === '36,37,38')
+    if (!sinTocar) return
+
+    const esCalzado = categorias.find((c) => c.id === idCategoria)?.nombre === 'Calzado'
+    setTalles(
+      (esCalzado ? ['36', '37', '38'] : ['S', 'M', 'L']).map((talle) => ({ talle, stock: 0 })),
+    )
+  }
 
   const subirArchivos = async (evento) => {
     const archivos = [...evento.target.files]
@@ -208,9 +230,11 @@ export default function FormularioProducto({ producto, alCerrar }) {
           <select
             className="admin-campo__control"
             value={datos.categoria_id}
-            onChange={(e) =>
+            onChange={(e) => {
               // Al cambiar de categoría, la subcategoría vieja deja de aplicar.
               setDatos((d) => ({ ...d, categoria_id: e.target.value, subcategoria_id: '' }))
+              cambiarTallesPorDefecto(e.target.value)
+            }
             }
           >
             <option value="">Sin categoría</option>
@@ -269,6 +293,12 @@ export default function FormularioProducto({ producto, alCerrar }) {
       <fieldset className="admin-bloque">
         <legend className="admin-campo__label">Talles y stock</legend>
 
+        <p className="admin-ayuda">
+          {categoriaElegida?.nombre === 'Calzado'
+            ? 'Un renglón por numeración, con cuántos pares te quedan de cada una. Se sugieren del 34 al 41, pero podés escribir cualquiera.'
+            : 'Un renglón por talle, con cuántas unidades te quedan de cada uno. Se sugieren los habituales, pero podés escribir cualquiera.'}
+        </p>
+
         {talles.map((t, indice) => (
           <div className="admin-fila" key={indice}>
             <input
@@ -303,7 +333,7 @@ export default function FormularioProducto({ producto, alCerrar }) {
         ))}
 
         <datalist id="talles-sugeridos">
-          {ORDEN_TALLES.map((t) => (
+          {sugerencias.map((t) => (
             <option key={t} value={t} />
           ))}
         </datalist>
